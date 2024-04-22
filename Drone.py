@@ -8,3 +8,5 @@ class Drone:
         self.name = name
         self.ipAddress = ipAddress
         self.port = port
+    def __str__(self):
+        return self.name
