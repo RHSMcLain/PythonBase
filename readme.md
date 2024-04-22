@@ -5,6 +5,14 @@ Plan: Create two queues. One to go in to the comm thread, and one to come out of
 On the main thread, we use the after with a brief delay to let it check the queue every...half second?
 On teh comm thread, we include a check every time through the loop. 
 
-Current challenges: getting the comm thread to quit when the tkinter window is closed
-Getting the listbox to update when a new drone gets added.  Test ith a button to answer the question: is it the threads or the tkinter code that's not working right?
+Current Packets List: 
+From Drone: 
+1. HND|(index if known, -1 if not)|drone name --- introduces this drone to the base station. Base station adds it to the known list. 
+
+Desired Packets List: 
+1. UPD|index|name|... (an option to provide needed telemetry data to the base station)
+2. EMG|index|name|... (an option to provide emergency communication for action)
+
+
+
 

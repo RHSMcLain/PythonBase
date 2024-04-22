@@ -8,13 +8,14 @@ from queue import Queue
 qFromComms = Queue()
 qToComms = Queue()
 sendSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
 terminate = False
 maxDrones = 3
 drones = []
+#these next two lines are for testing only. Remove them
 drones.append(Drone(0, "one", "10.20.18.23", 85))
-
 drones.append(Drone(1, "two", "10.20.18.23", 85))
-myList = ["a", "b", "c"]
+
 UDP_IP = "10.127.232.98" #this needs to be the current IP of this computer. Can we grab it at runtime?
 
 UDP_PORT = 5005
@@ -91,7 +92,7 @@ def listen(q_out, q_in):
     
     while True:
         #check if we need to stop--grab from q_in  
-        data = b""    
+        data = b""    #the b prefix makes it byte data
         if (not q_in.empty()):
             qIn = q_in.get()
             if (qIn == "TERMINATE"):
