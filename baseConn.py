@@ -5,7 +5,8 @@ from Drone import Drone
 from threading import Thread
 from queue import Queue
 
-q = Queue()
+qFromComms = Queue()
+qToComms = Queue()
 sendSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 terminate = False
 maxDrones = 3
@@ -14,15 +15,13 @@ drones.append(Drone(0, "one", "10.20.18.23", 85))
 
 drones.append(Drone(1, "two", "10.20.18.23", 85))
 myList = ["a", "b", "c"]
-# UDP_IP = "192.168.50.124"
-UDP_IP = "192.168.202.2"
-# UDP_IP = "10.127.174.114"
+UDP_IP = "192.168.50.124" #this needs to be the current IP of this computer. Can we grab it at runtime?
+
 UDP_PORT = 5005
 
 root = Tk()
 root.geometry("400x400")
 
-btn = ttk.Button()
 frm = ttk.Frame(root, padding=10)
 frm.grid()
 ttk.Label(frm, text="hello world").grid(column = 0, row = 0)
@@ -76,15 +75,19 @@ def listDrones():
     for drone in drones:
         print(drone.name, drone.ipAddress, drone.port, "\t") 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock.setblocking(0)
 sock.bind((UDP_IP, UDP_PORT))
 
 print("Ready3")
-def listen(q_out):
-    global terminate
+def listen(q_out, q_in):
+    
     while True:
-        if terminate:
-            print("stopping")
-            break
+        #check if we need to stop--grab from q_in      
+        if (not q_in.empty()):
+            qIn = q_in.get()
+            if (qIn == "TERMINATE"):
+                q_out.put("STOPPING")
+                break
         data, addr = sock.recvfrom(1024)
         strData = data.decode("utf-8")
         print("Received message %s" % data)
@@ -100,8 +103,9 @@ def listen(q_out):
         #     handshake(parts, addr)
     print("goodbye")
 def addDrone():
+    #this is just to test if tkinter will add them to the listbox on a button press.
     drones.append(Drone(8, "test", "none", 17))
-
+    print(str(drones))
 def checkQueue(q_in):
     if (not q_in.empty()):
         print("checking queue")
@@ -122,11 +126,16 @@ def checkQueue(q_in):
             #HANDSHAKE
             handshake(msg, (addr, port))
     root.after(1000, checkQueue, q_in)
-t = Thread(target=listen, args=(q,))
+
+btn = ttk.Button(root, text="test", command = addDrone)
+btn.grid(row=0, column=5)
+t = Thread(target=listen, args=(qFromComms, qToComms))
 t.start()
-root.after(1000, checkQueue, q)
+root.after(1000, checkQueue, qFromComms)
 # root.bind("<<updateevent>>", updateDronesList)
 root.mainloop()
-terminate = True
+qToComms.put("TERMINATE") #tell the subloop on the backup thread to quit.
+t = qFromComms.get(timeout=3.0)
+#give it a chance to quit
 print("all done")
 exit(0)
