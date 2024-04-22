@@ -88,7 +88,7 @@ sock.setblocking(0)
 sock.bind((UDP_IP, UDP_PORT))
 
 print("Ready3")
-def listen(q_out, q_in):
+def listen(q_out, q_in):#happens on a separate thread
     
     while True:
         #check if we need to stop--grab from q_in  
