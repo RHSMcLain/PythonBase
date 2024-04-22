@@ -15,7 +15,7 @@ drones.append(Drone(0, "one", "10.20.18.23", 85))
 
 drones.append(Drone(1, "two", "10.20.18.23", 85))
 myList = ["a", "b", "c"]
-UDP_IP = "192.168.50.124" #this needs to be the current IP of this computer. Can we grab it at runtime?
+UDP_IP = "10.127.232.98" #this needs to be the current IP of this computer. Can we grab it at runtime?
 
 UDP_PORT = 5005
 
@@ -49,7 +49,7 @@ def handshake(msg, addr):
         drones.append(drone)
         for adrone in drones:
             print(adrone)
-        
+        updateList()
         sendMessage(drone.ipAddress, drone.port, "HSC|" + str(i))
 
     else:
@@ -68,6 +68,14 @@ def sendMessage(ipAddress, port, msg):
     sendSocket.sendto(bMsg, (ipAddress, int(port)))
     print("sent message")
 # 
+def updateList():
+    #clear the list box
+    droneList.delete(0, len(drones)-1)
+
+    #walk through drones
+    for i in range(len(drones)):
+        droneList.insert(i, str(drones[i]))
+    #insert all the drone elements
 
 
 def listDrones():
@@ -82,13 +90,17 @@ print("Ready3")
 def listen(q_out, q_in):
     
     while True:
-        #check if we need to stop--grab from q_in      
+        #check if we need to stop--grab from q_in  
+        data = b""    
         if (not q_in.empty()):
             qIn = q_in.get()
             if (qIn == "TERMINATE"):
                 q_out.put("STOPPING")
                 break
-        data, addr = sock.recvfrom(1024)
+        try:
+            data, addr = sock.recvfrom(1024)
+        except:
+            continue
         strData = data.decode("utf-8")
         print("Received message %s" % data)
         strData = strData + "|" + addr[0] + "|" + str(addr[1])#the message, the ip, the port
@@ -127,7 +139,7 @@ def checkQueue(q_in):
             handshake(msg, (addr, port))
     root.after(1000, checkQueue, q_in)
 
-btn = ttk.Button(root, text="test", command = addDrone)
+btn = ttk.Button(root, text="test", command = updateList)
 btn.grid(row=0, column=5)
 t = Thread(target=listen, args=(qFromComms, qToComms))
 t.start()
