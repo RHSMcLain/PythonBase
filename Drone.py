@@ -9,4 +9,5 @@ class Drone:
         self.ipAddress = ipAddress
         self.port = port
     def __str__(self):
+        #This provides the string that will be used in the listbox
         return self.name
