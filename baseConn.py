@@ -139,8 +139,6 @@ def checkQueue(q_in):
             handshake(msg, (addr, port))
     root.after(1000, checkQueue, q_in)
 
-btn = ttk.Button(root, text="test", command = updateList)
-btn.grid(row=0, column=5)
 t = Thread(target=listen, args=(qFromComms, qToComms))
 t.start()
 root.after(1000, checkQueue, qFromComms)
