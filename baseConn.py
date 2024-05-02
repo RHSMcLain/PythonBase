@@ -5,6 +5,24 @@ from Drone import Drone
 from threading import Thread
 from queue import Queue
 
+#pip install "requests>=2.*"
+#pip install netifaces
+
+UDP_IP = "" #this needs to be the current IP of this computer. Can we grab it at runtime?
+
+try:
+    hostname = socket.gethostname()
+    print(hostname)
+    print("00000")
+    ipv4_address = socket.gethostbyname(hostname + ".local")
+    print(f"Internal IPv4 Address for {hostname}: {ipv4_address}")
+    UDP_IP = ipv4_address
+except socket.gaierror as e:
+    print("There was an error resolving the hostname.")
+    print(e)
+except Exception as e:
+    print(f"An unexpected error occurred: {e}")
+
 qFromComms = Queue()
 qToComms = Queue()
 sendSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -16,7 +34,6 @@ drones = []
 drones.append(Drone(0, "one", "10.20.18.23", 85))
 drones.append(Drone(1, "two", "10.20.18.23", 85))
 
-UDP_IP = "10.127.232.98" #this needs to be the current IP of this computer. Can we grab it at runtime?
 
 UDP_PORT = 5005
 
@@ -29,7 +46,7 @@ ttk.Label(frm, text="hello world").grid(column = 0, row = 0)
 ttk.Label(frm, text="Drones List").grid(column = 0, row = 1)
 
 listVar = StringVar(value = drones)
-droneList = Listbox(master = root, listvariable = listVar)
+droneList = Listbox(master = root,width =100, height = 100, listvariable = listVar)
 
 droneList.grid(column = 0, row = 2)
 
