@@ -1,22 +1,43 @@
 import socket
+import netifaces as ni
 from tkinter import *
 from tkinter import ttk
 from Drone import Drone
 from threading import Thread
 from queue import Queue
+from pynput.keyboard import Key, Listener
+import time
+#pip3 install "requests>=2.*"
+#pip3 install netifaces
 
-#pip install "requests>=2.*"
-#pip install netifaces
+UDP_IP = "10.232.88.99" #this needs to be the current IP of this computer. Can we grab it at runtime?
 
-UDP_IP = "" #this needs to be the current IP of this computer. Can we grab it at runtime?
+#BRENDAN CODE _____________________________________________________________________________________________________
+yaw = 0
+keyQ = False
+keyE = False
+roll = 0 
+keyA = False
+keyD = False
+pitch = 0
+keyW = False
+keyS = False
+throttle = 0
+keyAU = False
+keyAD = False
+shouldQuit = False
+#BRENDAN CODE _____________________________________________________________________________________________________
 
 try:
     hostname = socket.gethostname()
     print(hostname)
     print("00000")
-    ipv4_address = socket.gethostbyname(hostname + ".local")
-    print(f"Internal IPv4 Address for {hostname}: {ipv4_address}")
-    UDP_IP = ipv4_address
+    # ipv4_address = socket.gethostbyname(hostname + ".local")
+    # print(f"Internal IPv4 Address for {hostname}: {ipv4_address}")
+    # 
+    ip = ni.ifaddresses('en1')[ni.AF_INET][0]['addr']
+    UDP_IP = ip
+    print(ip)
 except socket.gaierror as e:
     print("There was an error resolving the hostname.")
     print(e)
@@ -85,7 +106,9 @@ def sendMessage(ipAddress, port, msg):
     bMsg = msg.encode("ascii")
     sendSocket.sendto(bMsg, (ipAddress, int(port)))
     print("sent message")
-# 
+def manualControl():
+
+
 def updateList():
     #clear the list box
     droneList.delete(0, len(drones)-1)
