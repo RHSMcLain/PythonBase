@@ -14,6 +14,7 @@ UDP_IP = "10.127.234.48" #this needs to be the current IP of this computer. Can 
 UDP_PORT = 5005
 
 #BRENDAN CODE _____________________________________________________________________________________________________
+global yaw, roll, pitch, throttle, keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, shouldQuit
 yaw = 0
 keyQ = False
 keyE = False
@@ -27,6 +28,7 @@ throttle = 0
 keyAU = False
 keyAD = False
 shouldQuit = False
+
 
 
 def clamp(val):
@@ -44,7 +46,6 @@ def introToAP():
 def show(key):
     global yaw, roll, pitch, throttle, keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, shouldQuit
     if key == Key.up:
-        print("Up")
         keyAU = True
         return
     if key == Key.down:
@@ -142,14 +143,29 @@ def sendMessage(ipAddress, port, msg):
 def manualControl():
     listener =  Listener(on_press = show, on_release = release)   
     listener.start()
+    global yaw, roll, pitch, throttle, keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, shouldQuit
+    yaw = 0
+    keyQ = False
+    keyE = False
+    roll = 0 
+    keyA = False
+    keyD = False
+    pitch = 0
+    keyW = False
+    keyS = False
+    throttle = 0
+    keyAU = False
+    keyAD = False
+    shouldQuit = False
     while True:
+        print("done")
         if True:
             if keyQ:
                 yaw -= 0.01
             elif keyE:
-                yaw += .01
+                yaw += 0.01
             if keyA:
-                roll -= .01
+                roll -= 0.01
             elif keyD:
                 roll += 0.01
             if keyW:
@@ -163,6 +179,27 @@ def manualControl():
             if shouldQuit:
                 listener.stop()
                 break
+
+
+
+            if yaw > 0 and keyQ == False and keyE == False:
+                yaw -= 0.01
+            elif yaw < 0 and keyQ == False and keyE == False:
+                yaw += 0.01
+            if roll > 0 and keyA == False and keyD == False:
+                roll -= 0.01
+            elif roll < 0 and keyA == False and keyD == False:
+                roll += 0.01
+            if pitch > 0 and keyW == False and keyS == False:
+                pitch -= 0.01
+            elif pitch < 0 and keyW == False and keyS == False:
+                pitch += 0.01
+            if throttle > 0 and keyAU == False and keyAD == False:
+                throttle -= 0.01
+            elif throttle < 0 and keyAU == False and keyAD == False:
+                throttle += 0.01
+
+            
             yaw = clamp(yaw)
             roll = clamp(roll)
             pitch = clamp(pitch)
@@ -170,7 +207,7 @@ def manualControl():
             yaw = round(yaw, 2)
             roll = round(roll, 2)
             pitch = round(pitch, 2)
-            throttle = round(throttle, 2)
+            throttle = round(throttle)
             print(yaw, " -- yaw")
             print(roll, " -- roll")
             print(pitch, " -- pitch")
@@ -285,7 +322,7 @@ print("Ready3")
 #-----------  WHAT WAS ALREADY HERE IS BELOW
 t = Thread(target=listen, args=(qFromComms, qToComms))
 t.start()
-m = Thread(target=manualControl, args=(qFromComms, qToComms))
+m = Thread(target=manualControl, args=())
 m.start()
 root.after(1000, checkQueue, qFromComms)
 # root.bind("<<updateevent>>", updateDronesList)
