@@ -66,7 +66,7 @@ def show(key):
     if key.char == 'p':
         shouldQuit = True
 def release(key):
-    global keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD
+    global keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, throttle
     if key == Key.up:
         keyAU = False
         return
@@ -144,75 +144,73 @@ def manualControl():
     listener =  Listener(on_press = show, on_release = release)   
     listener.start()
     global yaw, roll, pitch, throttle, keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, shouldQuit
-    yaw = 0
-    keyQ = False
-    keyE = False
-    roll = 0 
-    keyA = False
-    keyD = False
-    pitch = 0
-    keyW = False
-    keyS = False
-    throttle = 0
-    keyAU = False
-    keyAD = False
-    shouldQuit = False
+    # yaw = 0
+    # keyQ = False
+    # keyE = False
+    # roll = 0 
+    # keyA = False
+    # keyD = False
+    # pitch = 0
+    # keyW = False
+    # keyS = False
+    # throttle = 0
+    # keyAU = False
+    # keyAD = False
+    # shouldQuit = False
     while True:
-        print("done")
-        if True:
-            if keyQ:
-                yaw -= 0.01
-            elif keyE:
-                yaw += 0.01
-            if keyA:
-                roll -= 0.01
-            elif keyD:
-                roll += 0.01
-            if keyW:
-                pitch += 0.01
-            elif keyS:
-                pitch -= 0.01
-            if keyAU:
-                throttle += 0.01
-            elif keyAD:
-                throttle -= 0.01
-            if shouldQuit:
-                listener.stop()
-                break
+        if keyQ:
+            yaw -= 0.01
+        elif keyE:
+            yaw += 0.01
+        if keyA:
+            roll -= 0.01
+        elif keyD:
+            roll += 0.01
+        if keyW:
+            pitch += 0.01
+        elif keyS:
+            pitch -= 0.01
+        if keyAU:
+            throttle += 0.01
+        elif keyAD:
+            throttle -= 0.01
+        if shouldQuit:
+            listener.stop()
+            break
 
 
 
-            if yaw > 0 and keyQ == False and keyE == False:
-                yaw -= 0.01
-            elif yaw < 0 and keyQ == False and keyE == False:
-                yaw += 0.01
-            if roll > 0 and keyA == False and keyD == False:
-                roll -= 0.01
-            elif roll < 0 and keyA == False and keyD == False:
-                roll += 0.01
-            if pitch > 0 and keyW == False and keyS == False:
-                pitch -= 0.01
-            elif pitch < 0 and keyW == False and keyS == False:
-                pitch += 0.01
-            if throttle > 0 and keyAU == False and keyAD == False:
-                throttle -= 0.01
-            elif throttle < 0 and keyAU == False and keyAD == False:
-                throttle += 0.01
+        if yaw > 0 and keyQ == False and keyE == False:
+            yaw -= 0.01
+        elif yaw < 0 and keyQ == False and keyE == False:
+            yaw += 0.01
+        if roll > 0 and keyA == False and keyD == False:
+            roll -= 0.01
+        elif roll < 0 and keyA == False and keyD == False:
+            roll += 0.01
+        if pitch > 0 and keyW == False and keyS == False:
+            pitch -= 0.01
+        elif pitch < 0 and keyW == False and keyS == False:
+            pitch += 0.01
+        if throttle > 0 and keyAU == False and keyAD == False:
+            throttle -= 0.01
+        elif throttle < 0 and keyAU == False and keyAD == False:
+            throttle += 0.01
 
-            
-            yaw = clamp(yaw)
-            roll = clamp(roll)
-            pitch = clamp(pitch)
-            throttle = clamp(throttle)
-            yaw = round(yaw, 2)
-            roll = round(roll, 2)
-            pitch = round(pitch, 2)
-            throttle = round(throttle)
-            print(yaw, " -- yaw")
-            print(roll, " -- roll")
-            print(pitch, " -- pitch")
-            print(throttle, " -- throttle")
-            time.sleep(0.01)
+        
+        yaw = clamp(yaw)
+        roll = clamp(roll)
+        pitch = clamp(pitch)
+        throttle = clamp(throttle)
+        yaw = round(yaw, 2)
+        roll = round(roll, 2)
+        pitch = round(pitch, 2)
+        throttle = round(throttle, 2)
+        print(yaw, " -- yaw")
+        print(roll, " -- roll")
+        print(pitch, " -- pitch")
+        print(throttle, " -- throttle")
+        time.sleep(0.01)
 
 def updateList():
     #clear the list box
