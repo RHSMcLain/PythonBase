@@ -10,7 +10,7 @@ import time
 #pip3 install "requests>=2.*"
 #pip3 install netifaces
 
-UDP_IP = "10.127.234.48" #this needs to be the current IP of this computer. Can we grab it at runtime?
+UDP_IP = "192.168.4.121" #this needs to be the current IP of this computer. Can we grab it at runtime?
 UDP_PORT = 5005
 
 #BRENDAN CODE _____________________________________________________________________________________________________
@@ -28,6 +28,7 @@ throttle = 0
 keyAU = False
 keyAD = False
 shouldQuit = False
+global selDrone
 
 
 
@@ -206,10 +207,19 @@ def manualControl():
         roll = round(roll, 2)
         pitch = round(pitch, 2)
         throttle = round(throttle, 2)
-        print(yaw, " -- yaw")
-        print(roll, " -- roll")
-        print(pitch, " -- pitch")
-        print(throttle, " -- throttle")
+        # print(yaw, " -- yaw")
+        # print(roll, " -- roll")
+        # print(pitch, " -- pitch")
+        # print(throttle, " -- throttle")
+        selDrone = drones[2]
+        for i in droneList.curselection():
+            selDrone = drones[i]
+        
+        sendMessage(selDrone.ipAddress, selDrone.port, str(yaw))
+        print(yaw)
+        #sendMessage(selDrone.ipAddress, selDrone.port, yaw + str(i))
+
+        
         time.sleep(0.01)
 
 def updateList():
@@ -294,6 +304,7 @@ drones = []
 #these next two lines are for testing only. Remove them
 drones.append(Drone(0, "one", "10.20.18.23", 85))
 drones.append(Drone(1, "two", "10.20.18.23", 85))
+drones.append(Drone(2, "three", "192.168.4.121", 2390))
 
 
 #----- Setup our GUI --------
