@@ -9,8 +9,30 @@ from pynput.keyboard import Key, Listener
 import time
 #pip3 install "requests>=2.*"
 #pip3 install netifaces
+global UDP_IP
+UDP_IP = 0
+def getMyIP():
+    try:
+        hostname = socket.gethostname()
+        print(hostname)
+        print("00000")
+        # ipv4_address = socket.gethostbyname(hostname + ".local")
+        # print(f"Internal IPv4 Address for {hostname}: {ipv4_address}")
+        # 
+        ip = ni.ifaddresses('en1')[ni.AF_INET][0]['addr']
+        UDP_IP = ip
+        UDP_PORT = 5005
+        print(ip)
+    except socket.gaierror as e:
+        print("There was an error resolving the hostname.")
+        print(e)
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
 
-UDP_IP = "192.168.4.121" #this needs to be the current IP of this computer. Can we grab it at runtime?
+getMyIP()
+ip = ni.ifaddresses('en1')[ni.AF_INET][0]['addr']
+ #this needs to be the current IP of this computer. Can we grab it at runtime?
+UDP_IP = ip
 UDP_PORT = 5005
 
 #BRENDAN CODE _____________________________________________________________________________________________________
@@ -88,26 +110,6 @@ def release(key):
         keyS = False
 # Collect all event until released
 #BRENDAN CODE _____________________________________________________________________________________________________
-def getMyIP():
-    try:
-        hostname = socket.gethostname()
-        print(hostname)
-        print("00000")
-        # ipv4_address = socket.gethostbyname(hostname + ".local")
-        # print(f"Internal IPv4 Address for {hostname}: {ipv4_address}")
-        # 
-        ip = ni.ifaddresses('en1')[ni.AF_INET][0]['addr']
-        UDP_IP = ip
-        UDP_PORT = 5005
-        print(ip)
-    except socket.gaierror as e:
-        print("There was an error resolving the hostname.")
-        print(e)
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}")
-
-
-
 
 def handshake(msg, addr):
     
@@ -124,7 +126,7 @@ def handshake(msg, addr):
         for adrone in drones:
             print(adrone)
         updateList()
-        sendMessage(drone.ipAddress, drone.port, "HSC|" + str(i))
+        #sendMessage(drone.ipAddress, drone.port, "HSC|" + str(i))
 
     else:
         if drones[i].name == parts[2]:
@@ -215,8 +217,9 @@ def manualControl():
         for i in droneList.curselection():
             selDrone = drones[i]
         
-        sendMessage(selDrone.ipAddress, selDrone.port, str(yaw))
-        print(yaw)
+        #print(selDrone.ipAddress)
+        sendMessage(selDrone.ipAddress, selDrone.port, "|" + str(yaw) + "|" + str(roll) + "|" + str(pitch) + "|" + str(throttle) + "|")
+        #print(yaw)
         #sendMessage(selDrone.ipAddress, selDrone.port, yaw + str(i))
 
         
@@ -253,8 +256,9 @@ def listen(q_out, q_in):#happens on a separate thread
             continue
         strData = data.decode("utf-8")
         print("Received message %s" % data)
-        strData = strData + "|" + addr[0] + "|" + str(addr[1])#the message, the ip, the port
+        # strData = strData + "|" + addr[0] + "|" + str(addr[1])#the message, the ip, the port
         strData = addr[0] + "*" + str(addr[1]) + "*" + strData#the ip, the port, the message
+        # the message is pipe (|) delimited. The ip, port, and message are * delimited
         q_out.put(strData) #this sends the message to the main thread
         # parts = strData.split("|")
         # print(parts)
@@ -293,7 +297,6 @@ def checkQueue(q_in):
 #--------------------------------------------
 #------------    Main Code ------------------
 
-getMyIP()
 qFromComms = Queue() #gets information from the comms thread
 qToComms = Queue() #sends information to the comms thread
 sendSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -304,7 +307,7 @@ drones = []
 #these next two lines are for testing only. Remove them
 drones.append(Drone(0, "one", "10.20.18.23", 85))
 drones.append(Drone(1, "two", "10.20.18.23", 85))
-drones.append(Drone(2, "three", "192.168.4.121", 2390))
+drones.append(Drone(2, "three", "192.168.4.22", 80))
 
 
 #----- Setup our GUI --------
