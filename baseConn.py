@@ -2,6 +2,7 @@ import socket
 import netifaces as ni
 from tkinter import *
 from tkinter import ttk
+import tkinter as tk
 from Drone import Drone
 from threading import Thread
 from queue import Queue
@@ -31,7 +32,7 @@ def getMyIP():
 
 getMyIP()
 ip = ni.ifaddresses('en1')[ni.AF_INET][0]['addr']
- #this needs to be the current IP of this computer. Can we grab it at runtime?
+ #ask mclain how to do this on windows
 UDP_IP = ip
 UDP_PORT = 5005
 
@@ -51,6 +52,8 @@ keyAU = False
 keyAD = False
 shouldQuit = False
 global selDrone
+global selDroneTK
+
 
 
 
@@ -147,6 +150,8 @@ def manualControl():
     listener =  Listener(on_press = show, on_release = release)   
     listener.start()
     global yaw, roll, pitch, throttle, keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, shouldQuit
+    global selDrone
+    global selDroneTK
     # yaw = 0
     # keyQ = False
     # keyE = False
@@ -213,12 +218,12 @@ def manualControl():
         # print(roll, " -- roll")
         # print(pitch, " -- pitch")
         # print(throttle, " -- throttle")
-        selDrone = drones[2]
         for i in droneList.curselection():
             selDrone = drones[i]
+            #print(selDrone)
         
         #print(selDrone.ipAddress)
-        sendMessage(selDrone.ipAddress, selDrone.port, "|" + str(yaw) + "|" + str(roll) + "|" + str(pitch) + "|" + str(throttle) + "|")
+        #sendMessage(selDrone.ipAddress, selDrone.port, "|" + str(yaw) + "|" + str(roll) + "|" + str(pitch) + "|" + str(throttle) + "|")
         #print(yaw)
         #sendMessage(selDrone.ipAddress, selDrone.port, yaw + str(i))
 
@@ -238,7 +243,7 @@ def updateList():
 def listDrones():
     global drones
     for drone in drones:
-        print(drone.name, drone.ipAddress, drone.port, "\t") 
+        printdrone.name, drone.ipAddress, drone.port, "\t" 
 
 def listen(q_out, q_in):#happens on a separate thread
     
@@ -273,6 +278,12 @@ def addDrone():
     drones.append(Drone(8, "test", "none", 17))
     print(str(drones))
 def checkQueue(q_in):
+    global selDrone
+    global selDroneTK
+    selDroneTK.set(selDrone.ipAddress)
+    #lblDroneIP.config(text = selDrone.ipAddress)
+    root.update_idletasks()
+    #print(selDrone.ipAddress)
     if (not q_in.empty()):
         print("checking queue")
         #grab the item
@@ -308,11 +319,12 @@ drones = []
 drones.append(Drone(0, "one", "10.20.18.23", 85))
 drones.append(Drone(1, "two", "10.20.18.23", 85))
 drones.append(Drone(2, "three", "192.168.4.22", 80))
-
+selDrone = drones[0]
 
 #----- Setup our GUI --------
 root = Tk()
 root.geometry("400x400")
+root.title("Drone Manager")
 
 frm = ttk.Frame(root, padding=10)
 frm.grid()
@@ -320,9 +332,17 @@ ttk.Label(frm, text="hello world").grid(column = 0, row = 0)
 ttk.Label(frm, text="Drones List").grid(column = 0, row = 1)
 
 listVar = StringVar(value = drones)
-droneList = Listbox(master = root,width =100, height = 100, listvariable = listVar)
+droneList = Listbox(master = root,width =10, height = 25, listvariable = listVar)
 
 droneList.grid(column = 0, row = 2)
+black = "black"
+
+selDroneTK = tk.StringVar(root)
+
+ttk.Label(root, text="Name | IP | Port").grid(column = 2, row = 1,padx=50)
+lblDroneIP = ttk.Label(root, textvariable=selDroneTK).grid(column = 2, row = 2,padx=50)
+
+
 #--------- END OF FIRST GRAB ----------
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.setblocking(0)
@@ -344,6 +364,5 @@ t = qFromComms.get(timeout=3.0)
 #give it a chance to quit
 print("all done")
 exit(0)
-
 
 
