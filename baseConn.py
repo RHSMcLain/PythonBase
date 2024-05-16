@@ -1,3 +1,18 @@
+
+Traceback (most recent call last):
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/threading.py", line 1038, in _bootstrap_inner
+    self.run()
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/threading.py", line 975, in run
+    self._target(*self._args, **self._kwargs)
+  File "/Users/connorm25/PythonBase/baseConn.py", line 246, in manualControl
+    sendMessage(selDrone.ipAddress, selDrone.port, "|" + str(yaw) + "|" + str(roll) + "|" + str(pitch) + "|" + str(throttle) + "|")
+  File "/Users/connorm25/PythonBase/baseConn.py", line 167, in sendMessage
+    sendSocket.sendto(bMsg, (ipAddress, int(port)))
+OSError: [Errno 65] No route to host
+
+
+
+
 import socket
 import netifaces as ni
 from tkinter import *
