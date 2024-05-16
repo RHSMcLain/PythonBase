@@ -57,6 +57,7 @@ global selDroneTK
 
 
 
+
 def clamp(val):
     lowLimit = -100
     highLimit = 100
@@ -68,10 +69,29 @@ def clamp(val):
 def introToAP():
     #tell the AP that we are the base station. 
     #AP needs to save that IP address to tell it to drones (so they can connect to the base station)
-    pass
+    sendMessage("192.168.4.22", 80, "BaseStationIP")
+    print ("sent message to AP")
+    #listen 
+    while True:
+    #check if we need to stop--grab from q_in  
+        data = b""    #the b prefix makes it byte data
+        
+        try:
+            data, addr = sock.recvfrom(1024)
+            strData = data.decode("utf-8")
+            print("Received message %s" % data)
+            break
+        except:
+            
+            continue
+        
+        #test the input to see if it is the confirmation code
+        #if it is, we can break
+
 def show(key):
     global yaw, roll, pitch, throttle, keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, shouldQuit
     if key == Key.up:
+        print("Up")
         keyAU = True
         return
     if key == Key.down:
@@ -223,8 +243,8 @@ def manualControl():
             #print(selDrone)
         
         #print(selDrone.ipAddress)
-        #sendMessage(selDrone.ipAddress, selDrone.port, "|" + str(yaw) + "|" + str(roll) + "|" + str(pitch) + "|" + str(throttle) + "|")
-        #print(yaw)
+        sendMessage(selDrone.ipAddress, selDrone.port, "|" + str(yaw) + "|" + str(roll) + "|" + str(pitch) + "|" + str(throttle) + "|")
+        print(yaw)
         #sendMessage(selDrone.ipAddress, selDrone.port, yaw + str(i))
 
         
@@ -243,7 +263,7 @@ def updateList():
 def listDrones():
     global drones
     for drone in drones:
-        printdrone.name, drone.ipAddress, drone.port, "\t" 
+        print(drone.name, drone.ipAddress, drone.port, "\t") 
 
 def listen(q_out, q_in):#happens on a separate thread
     
@@ -338,12 +358,14 @@ droneList.grid(column = 0, row = 2)
 black = "black"
 
 selDroneTK = tk.StringVar(root)
-
+button = Button(root,text = "Test!", width=5, height=5, command=lambda: introToAP()).grid()
 ttk.Label(root, text="Name | IP | Port").grid(column = 2, row = 1,padx=50)
 lblDroneIP = ttk.Label(root, textvariable=selDroneTK).grid(column = 2, row = 2,padx=50)
+selDrone = drones[1]
 
 
 #--------- END OF FIRST GRAB ----------
+getMyIP() #unsure
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.setblocking(0)
 sock.bind((UDP_IP, UDP_PORT))
