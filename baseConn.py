@@ -1,18 +1,3 @@
-
-Traceback (most recent call last):
-  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/threading.py", line 1038, in _bootstrap_inner
-    self.run()
-  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/threading.py", line 975, in run
-    self._target(*self._args, **self._kwargs)
-  File "/Users/connorm25/PythonBase/baseConn.py", line 246, in manualControl
-    sendMessage(selDrone.ipAddress, selDrone.port, "|" + str(yaw) + "|" + str(roll) + "|" + str(pitch) + "|" + str(throttle) + "|")
-  File "/Users/connorm25/PythonBase/baseConn.py", line 167, in sendMessage
-    sendSocket.sendto(bMsg, (ipAddress, int(port)))
-OSError: [Errno 65] No route to host
-
-
-
-
 import socket
 import netifaces as ni
 from tkinter import *
@@ -23,8 +8,14 @@ from threading import Thread
 from queue import Queue
 from pynput.keyboard import Key, Listener
 import time
+import customtkinter
+import tkinter
+import tkinter.messagebox
+from PIL import Image
 #pip3 install "requests>=2.*"
 #pip3 install netifaces
+#python3 -m pip install customtkinter
+#python3 -m pip install --upgrade Pillow
 global UDP_IP
 UDP_IP = 0
 def getMyIP():
@@ -66,9 +57,13 @@ throttle = 0
 keyAU = False
 keyAD = False
 shouldQuit = False
+global manualyes
 global selDrone
 global selDroneTK
+manualyes = False
 
+customtkinter.set_appearance_mode("dark")
+customtkinter.set_default_color_theme("blue")
 
 
 
@@ -146,6 +141,13 @@ def release(key):
         keyW = False
     if key.char == 's':
         keyS = False
+def begin():
+    global manualyes
+    if (manualyes == True):
+        manualyes = False
+        print("MANUALSTOPPED")
+    elif (manualyes == False):
+        manualyes = True
 # Collect all event until released
 #BRENDAN CODE _____________________________________________________________________________________________________
 
@@ -258,8 +260,9 @@ def manualControl():
             #print(selDrone)
         
         #print(selDrone.ipAddress)
-        sendMessage(selDrone.ipAddress, selDrone.port, "|" + str(yaw) + "|" + str(roll) + "|" + str(pitch) + "|" + str(throttle) + "|")
-        print(yaw)
+        if (manualyes == True):
+            sendMessage(selDrone.ipAddress, selDrone.port, "|" + str(yaw) + "|" + str(roll) + "|" + str(pitch) + "|" + str(throttle) + "|")
+            print(yaw)
         #sendMessage(selDrone.ipAddress, selDrone.port, yaw + str(i))
 
         
@@ -372,13 +375,222 @@ droneList = Listbox(master = root,width =10, height = 25, listvariable = listVar
 droneList.grid(column = 0, row = 2)
 black = "black"
 
+manualbutton = Button(root, text="Manual", width=5, height=5, command=lambda: begin()).grid(column=3, row=2, padx=50)
+
 selDroneTK = tk.StringVar(root)
 button = Button(root,text = "Test!", width=5, height=5, command=lambda: introToAP()).grid()
 ttk.Label(root, text="Name | IP | Port").grid(column = 2, row = 1,padx=50)
 lblDroneIP = ttk.Label(root, textvariable=selDroneTK).grid(column = 2, row = 2,padx=50)
-selDrone = drones[1]
+
+#-------------------------------------------------------------------------------------------------
+#------------------------------------CUSTOM TKINTER GUI----------------------------
+#-----------------------------------------------------------------------------
+
+# #create window
+# custom = customtkinter.CTk()
+# custom.geometry("300x400")
+# #create button
+# button = customtkinter.CTkButton(master=custom, text="test")
+# button.place(relx=0.5, rely=0.5, anchor=CENTER)
+
+#run loop
+#-------------custom.mainloop()
+
+class App(customtkinter.CTk):
+    def __init__(self):
+        super().__init__()
+
+        # configure window
+        self.title("Controlling Module")
+        self.geometry(f"{1100}x{580}")
+
+        # configure grid layout (4x4)
+        self.grid_columnconfigure(1, weight=1)
+        self.grid_columnconfigure((2, 3), weight=0)
+        self.grid_rowconfigure((0, 1, 2), weight=1)
+
+        # create sidebar frame with widgets
+        self.sidebar_frame = customtkinter.CTkFrame(self, width=140, corner_radius=0)
+        self.sidebar_frame.grid(row=0, column=0, rowspan=4, sticky="nsew")
+        self.sidebar_frame.grid_rowconfigure(4, weight=1)
+        self.logo_label = customtkinter.CTkLabel(self.sidebar_frame, text="Swarm Control Module", font=customtkinter.CTkFont(size=20, weight="bold"))
+        self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
+        self.sidebar_button_1 = customtkinter.CTkButton(self.sidebar_frame, command=self.sidebar_button_event, text="Enable Drone")
+        self.sidebar_button_1.grid(row=1, column=0, padx=20, pady=10)
+        self.sidebar_button_2 = customtkinter.CTkButton(self.sidebar_frame, command=self.sidebar_button_event, text="Disable Drone")
+        self.sidebar_button_2.grid(row=2, column=0, padx=20, pady=10)
+        self.sidebar_button_3 = customtkinter.CTkButton(self.sidebar_frame, command=self.sidebar_button_event, text="Test")
+        self.sidebar_button_3.grid(row=3, column=0, padx=20, pady=10)
+        self.appearance_mode_label = customtkinter.CTkLabel(self.sidebar_frame, text="Appearance Mode:", anchor="w")
+        self.appearance_mode_label.grid(row=5, column=0, padx=20, pady=(10, 0))
+        self.appearance_mode_optionemenu = customtkinter.CTkOptionMenu(self.sidebar_frame, values=["Light", "Dark", "System"],
+                                                                       command=self.change_appearance_mode_event)
+        self.appearance_mode_optionemenu.grid(row=6, column=0, padx=20, pady=(10, 10))
+        self.scaling_label = customtkinter.CTkLabel(self.sidebar_frame, text="UI Scaling:", anchor="w")
+        self.scaling_label.grid(row=7, column=0, padx=20, pady=(10, 0))
+        self.scaling_optionemenu = customtkinter.CTkOptionMenu(self.sidebar_frame, values=["80%", "90%", "100%", "110%", "120%"],
+                                                               command=self.change_scaling_event)
+        self.scaling_optionemenu.grid(row=8, column=0, padx=20, pady=(10, 20))
+
+        # create main entry and button
+        self.entry = customtkinter.CTkEntry(self, placeholder_text="Manual UDP Console")
+        self.entry.grid(row=3, column=1, columnspan=2, padx=(20, 0), pady=(20, 20), sticky="nsew")
+
+        self.main_button_1 = customtkinter.CTkButton(master=self, fg_color="transparent", border_width=2, text_color=("gray10", "#DCE4EE"), text="Send UDP Message")
+        self.main_button_1.grid(row=3, column=3, padx=(20, 20), pady=(20, 20), sticky="nsew")
+
+        # create textbox
+        self.textbox = customtkinter.CTkTextbox(self, width=250)
+        self.textbox.grid(row=0, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
+
+        # create tabview
+        self.tabview = customtkinter.CTkTabview(self, width=250)
+        self.tabview.grid(row=0, column=2, padx=(20, 0), pady=(20, 0), sticky="nsew")
+        self.tabview.add("Control")
+        self.tabview.add("Info")
+        self.tabview.add("Swarm")
+        self.tabview.tab("Control").grid_columnconfigure(0, weight=1)  # configure grid of individual tabs
+        self.tabview.tab("Info").grid_columnconfigure(0, weight=1)
+
+        self.optionmenu_1 = customtkinter.CTkOptionMenu(self.tabview.tab("Control"), dynamic_resizing=False,
+                                                        values=["Value 1", "Value 2", "Value Long Long Long"])
+        self.optionmenu_1.grid(row=0, column=0, padx=20, pady=(20, 10))
+        self.combobox_1 = customtkinter.CTkComboBox(self.tabview.tab("Control"),
+                                                    values=["Value 1", "Value 2", "Value Long....."])
+        self.combobox_1.grid(row=1, column=0, padx=20, pady=(10, 10))
+        self.string_input_button = customtkinter.CTkButton(self.tabview.tab("Control"), text="Direct Command",
+                                                           command=self.open_input_dialog_event)
+        self.string_input_button.grid(row=2, column=0, padx=20, pady=(10, 10))
+        self.label_tab_2 = customtkinter.CTkLabel(self.tabview.tab("Info"), text="Ip, Port will be here")
+        self.label_tab_2.grid(row=0, column=0, padx=20, pady=20)
+
+        # create radiobutton frame
+        self.radiobutton_frame = customtkinter.CTkFrame(self)
+        self.radiobutton_frame.grid(row=0, column=3, padx=(20, 20), pady=(20, 0), sticky="nsew")
+        self.radio_var = tkinter.IntVar(value=0)
+        self.label_radio_group = customtkinter.CTkLabel(master=self.radiobutton_frame, text="Mode and Stage Control:")
+        self.label_radio_group.grid(row=0, column=2, columnspan=1, padx=10, pady=10, sticky="")
+        self.radio_button_1 = customtkinter.CTkRadioButton(master=self.radiobutton_frame, variable=self.radio_var, value=0, text="Manual Mode")
+        self.radio_button_1.grid(row=1, column=2, pady=10, padx=20, sticky="n")
+        self.radio_button_2 = customtkinter.CTkRadioButton(master=self.radiobutton_frame, variable=self.radio_var, value=1, text="Swarm Mode")
+        self.radio_button_2.grid(row=2, column=2, pady=10, padx=20, sticky="n")
+        self.radio_button_3 = customtkinter.CTkRadioButton(master=self.radiobutton_frame, variable=self.radio_var, value=2)
+        self.radio_button_3.grid(row=3, column=2, pady=10, padx=20, sticky="n")
+
+        # create slider and progressbar frame
+        self.slider_progressbar_frame = customtkinter.CTkFrame(self, fg_color="transparent")
+        self.slider_progressbar_frame.grid(row=1, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
+        self.slider_progressbar_frame.grid_columnconfigure(0, weight=1)
+        self.slider_progressbar_frame.grid_rowconfigure(4, weight=1)
+        self.seg_button_1 = customtkinter.CTkSegmentedButton(self.slider_progressbar_frame)
+        self.seg_button_1.grid(row=0, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
+        self.progressbar_1 = customtkinter.CTkProgressBar(self.slider_progressbar_frame)
+        self.progressbar_1.grid(row=1, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
+        self.progressbar_2 = customtkinter.CTkProgressBar(self.slider_progressbar_frame)
+        self.progressbar_2.grid(row=2, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
+        self.slider_1 = customtkinter.CTkSlider(self.slider_progressbar_frame, from_=0, to=1, number_of_steps=4)
+        self.slider_1.grid(row=3, column=0, padx=(20, 10), pady=(10, 10), sticky="ew")
+        self.slider_2 = customtkinter.CTkSlider(self.slider_progressbar_frame, orientation="vertical")
+        self.slider_2.grid(row=0, column=1, rowspan=5, padx=(10, 10), pady=(10, 10), sticky="ns")
+        self.progressbar_3 = customtkinter.CTkProgressBar(self.slider_progressbar_frame, orientation="vertical")
+        self.progressbar_3.grid(row=0, column=2, rowspan=5, padx=(10, 20), pady=(10, 10), sticky="ns")
+
+        # create scrollable frame
+        self.scrollable_frame = customtkinter.CTkScrollableFrame(self, label_text="Main Swarm Communications")
+        self.scrollable_frame.grid(row=1, column=2, padx=(20, 0), pady=(20, 0), sticky="nsew")
+        self.scrollable_frame.grid_columnconfigure(0, weight=1)
+        self.scrollable_frame_switches = []
+        for i in range(100):
+            switch = customtkinter.CTkSwitch(master=self.scrollable_frame, text=f"Drone {i}")
+            switch.grid(row=i, column=0, padx=10, pady=(0, 20))
+            self.scrollable_frame_switches.append(switch)
+
+        # create checkbox and switch frame
+        self.checkbox_slider_frame = customtkinter.CTkFrame(self)
+        self.checkbox_slider_frame.grid(row=1, column=3, padx=(20, 20), pady=(20, 0), sticky="nsew")
+        self.checkbox_1 = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame, text="Basestation Comms")
+        self.checkbox_1.grid(row=1, column=0, pady=(20, 0), padx=20, sticky="n")
+        self.checkbox_2 = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame, text="SBUS Signal")
+        self.checkbox_2.grid(row=2, column=0, pady=(20, 0), padx=20, sticky="n")
+        self.checkbox_3 = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame, text="Assaf")
+        self.checkbox_3.grid(row=3, column=0, pady=20, padx=20, sticky="n")
+
+        # set default values
+        self.sidebar_button_3.configure(state="disabled", text="Connect to Swarm")
+        self.checkbox_3.configure(state="disabled")
+        self.checkbox_1.select()
+        self.scrollable_frame_switches[0].select()
+        self.scrollable_frame_switches[4].select()
+        self.radio_button_3.configure(state="disabled", text="Auto Mode")
+        self.appearance_mode_optionemenu.set("Dark")
+        self.scaling_optionemenu.set("100%")
+        self.optionmenu_1.set("Drone List")
+        self.combobox_1.set("Drones")
+        self.slider_1.configure(command=self.progressbar_2.set)
+        self.slider_2.configure(command=self.progressbar_3.set)
+        self.progressbar_1.configure(mode="indeterminnate")
+        self.progressbar_1.start()
+        self.textbox.insert("0.0", "flup\n\n" + "epic box.\n\n" * 20)
+        self.seg_button_1.configure(values=["Sensitivity", "Throttle", "Max Range"])
+        self.seg_button_1.set("Value 2")
 
 
+        my_progressbar = customtkinter.CTkProgressBar(self, orientation="horizontal",
+            width=200,
+            height=25,
+            corner_radius=15,
+            mode="indeterminate",
+            determinate_speed=5,
+            indeterminate_speed=.5,
+
+        )
+
+        my_progressbar.place(anchor="center", x=405, y=450)
+        my_progressbar.lift()
+        my_progressbar.set(0)
+        my_progressbar.start()
+
+
+#image testing-----------------
+
+    #     global my_image
+    #     self.iconbitmap('images/codemy.ico')
+    #     my_image = customtkinter.CTkImage(light_image=Image.open("C:\Users\Conno\Downloads\Screenshot 2024-03-28 124033.png"),
+	#         dark_image=Image.open("C:\Users\Conno\Downloads\Screenshot 2024-03-28 124033.png"),
+	#         size=(180,250)) # WidthxHeight
+
+    # my_label = customtkinter.CTkLabel(root, text="", image=my_image)
+    # my_label.pack(pady=10)
+
+    def open_input_dialog_event(self):
+        dialog = customtkinter.CTkInputDialog(text="Enter a Direct UDP Drone Command:", title="Direct Command")
+        print("CTkInputDialog:", dialog.get_input())
+
+    def change_appearance_mode_event(self, new_appearance_mode: str):
+        customtkinter.set_appearance_mode(new_appearance_mode)
+
+    def change_scaling_event(self, new_scaling: str):
+        new_scaling_float = int(new_scaling.replace("%", "")) / 100
+        customtkinter.set_widget_scaling(new_scaling_float)
+
+    def sidebar_button_event(self):
+        print("sidebar_button click")
+
+
+#app = App()
+#app.mainloop()
+
+
+
+
+
+
+
+
+
+
+#-----------------------------------------------------------------------------
+#-----------------------------------------------------------------------------
 #--------- END OF FIRST GRAB ----------
 getMyIP() #unsure
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
