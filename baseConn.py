@@ -69,8 +69,8 @@ customtkinter.set_default_color_theme("blue")
 
 
 def clamp(val):
-    lowLimit = -100
-    highLimit = 100
+    lowLimit = 1000
+    highLimit = 2000
     if val < lowLimit:
         val = lowLimit
     if val > highLimit:
@@ -82,10 +82,12 @@ def introToAP():
     sendMessage("192.168.4.22", 80, "BaseStationIP")
     print ("sent message to AP")
     #listen 
+    #TODO: PUT IN A RESEND EVERY FEW SECONDS
+    #CODE FOR THAT INCLUDES: curr_time = round(time.time()*1000)
     while True:
     #check if we need to stop--grab from q_in  
         data = b""    #the b prefix makes it byte data
-        
+        print("looping")
         try:
             data, addr = sock.recvfrom(1024)
             strData = data.decode("utf-8")
@@ -204,43 +206,43 @@ def manualControl():
     # shouldQuit = False
     while True:
         if keyQ:
-            yaw -= 0.01
+            yaw -= 1
         elif keyE:
-            yaw += 0.01
+            yaw += 1
         if keyA:
-            roll -= 0.01
+            roll -= 1
         elif keyD:
-            roll += 0.01
+            roll += 1
         if keyW:
-            pitch += 0.01
+            pitch += 1
         elif keyS:
-            pitch -= 0.01
+            pitch -= 1
         if keyAU:
-            throttle += 0.01
+            throttle += 1
         elif keyAD:
-            throttle -= 0.01
+            throttle -= 5
         if shouldQuit:
             listener.stop()
             break
 
 
 
-        if yaw > 0 and keyQ == False and keyE == False:
-            yaw -= 0.01
-        elif yaw < 0 and keyQ == False and keyE == False:
-            yaw += 0.01
-        if roll > 0 and keyA == False and keyD == False:
-            roll -= 0.01
-        elif roll < 0 and keyA == False and keyD == False:
-            roll += 0.01
-        if pitch > 0 and keyW == False and keyS == False:
-            pitch -= 0.01
-        elif pitch < 0 and keyW == False and keyS == False:
-            pitch += 0.01
-        if throttle > 0 and keyAU == False and keyAD == False:
-            throttle -= 0.01
-        elif throttle < 0 and keyAU == False and keyAD == False:
-            throttle += 0.01
+        if yaw > 1500 and keyQ == False and keyE == False:
+            yaw -= 1
+        elif yaw < 1500 and keyQ == False and keyE == False:
+            yaw += 1
+        if roll > 1500 and keyA == False and keyD == False:
+            roll -= 1
+        elif roll < 1500 and keyA == False and keyD == False:
+            roll += 1
+        if pitch > 1500 and keyW == False and keyS == False:
+            pitch -= 1
+        elif pitch < 1500 and keyW == False and keyS == False:
+            pitch += 1
+        if throttle > 1000 and keyAU == False and keyAD == False:
+            throttle -= 1
+        elif throttle < 1000 and keyAU == False and keyAD == False:
+            throttle += 1
 
         
         yaw = clamp(yaw)
@@ -261,7 +263,7 @@ def manualControl():
         
         #print(selDrone.ipAddress)
         if (manualyes == True):
-            sendMessage(selDrone.ipAddress, selDrone.port, "|" + str(yaw) + "|" + str(roll) + "|" + str(pitch) + "|" + str(throttle) + "|")
+            sendMessage(selDrone.ipAddress, selDrone.port, "MAN" + "|" + "0.0.0.0" + "|" + str(yaw) + "|" + str(roll) + "|" + str(pitch) + "|" + str(throttle) + "|")
             print(yaw)
         #sendMessage(selDrone.ipAddress, selDrone.port, yaw + str(i))
 
@@ -592,7 +594,7 @@ class App(customtkinter.CTk):
 #-----------------------------------------------------------------------------
 #-----------------------------------------------------------------------------
 #--------- END OF FIRST GRAB ----------
-getMyIP() #unsure
+#unsure
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.setblocking(0)
 sock.bind((UDP_IP, UDP_PORT))
