@@ -61,6 +61,11 @@ global manualyes
 global selDrone
 global selDroneTK
 manualyes = False
+global droneNumber
+droneNumber = 0
+global selectedDrone
+selectedDrone = "None"
+curr_time = round(time.time()*1000)
 
 customtkinter.set_appearance_mode("dark")
 customtkinter.set_default_color_theme("blue")
@@ -84,77 +89,96 @@ def introToAP():
     #listen 
     #TODO: PUT IN A RESEND EVERY FEW SECONDS
     #CODE FOR THAT INCLUDES: curr_time = round(time.time()*1000)
+    startTime = time.time()
+    introCount = 1
     while True:
     #check if we need to stop--grab from q_in  
-        data = b""    #the b prefix makes it byte data
-        print("looping")
+        data = b""    #the b prefix makes it byte dat
         try:
             data, addr = sock.recvfrom(1024)
             strData = data.decode("utf-8")
             print("Received message %s" % data)
-            break
-        except:
             
+            break
+        except:#crdrd
+            if (time.time() - startTime >= 3):
+                introCount += 1
+                sendMessage("192.168.4.22", 80, "BaseStationIP")
+                print ("sent message to AP: ", introCount)
+                startTime = time.time()
             continue
-        
         #test the input to see if it is the confirmation code
         #if it is, we can break
 
 def show(key):
     global yaw, roll, pitch, throttle, keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, shouldQuit
-    if key == Key.up:
-        print("Up")
-        keyAU = True
-        return
-    if key == Key.down:
-        keyAD = True
-        return
-    if key.char == 'q':
-        keyQ = True
-    if key.char == 'e':
-        keyE = True
-    if key.char == 'a':
-        keyA = True
-    if key.char == 'd':
-        keyD = True
-    if key.char == 'w':
-        keyW = True
-    if key.char == 's':
-        keyS = True
-    if key.char == 'p':
-        shouldQuit = True
+    try:
+        if key == Key.up:
+            print("Up")
+            keyAU = True
+            return
+        if key == Key.down:
+            keyAD = True
+            return
+        if key.char == 'q':
+            keyQ = True
+        if key.char == 'e':
+            keyE = True
+        if key.char == 'a':
+            keyA = True
+        if key.char == 'd':
+            keyD = True
+        if key.char == 'w':
+            keyW = True
+        if key.char == 's':
+            keyS = True
+        if key.char == 'p':
+            shouldQuit = True
+    except:
+        pass
 def release(key):
     global keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, throttle
-    if key == Key.up:
-        keyAU = False
-        return
-    if key == Key.down:
-        keyAD = False
-        return
-    if key.char == 'q':
-        keyQ = False   
-    if key.char == 'e':
-        keyE = False
-    if key.char == 'a':
-        keyA = False
-    if key.char == 'd':
-        keyD = False
-    if key.char == 'w':
-        keyW = False
-    if key.char == 's':
-        keyS = False
+    try:
+        if key == Key.up:
+            keyAU = False
+            return
+        if key == Key.down:
+            keyAD = False
+            return
+        if key.char == 'q':
+            keyQ = False   
+        if key.char == 'e':
+            keyE = False
+        if key.char == 'a':
+            keyA = False
+        if key.char == 'd':
+            keyD = False
+        if key.char == 'w':
+            keyW = False
+        if key.char == 's':
+            keyS = False
+    except:
+        pass
 def begin():
     global manualyes
     if (manualyes == True):
         manualyes = False
-        print("MANUALSTOPPED")
+        print("MANUAL STOPPED")
     elif (manualyes == False):
         manualyes = True
+def MODESwarm():
+    global manualyes
+    manualyes = False
+    print("|||  MANUAL STOPPED  |||")
+def MODEManual():
+    global manualyes
+    manualyes = True
+    print("|||  MANUAL ENABLED   |||")
 # Collect all event until released
 #BRENDAN CODE _____________________________________________________________________________________________________
 
 def handshake(msg, addr):
-    
+    global droneNumber
     parts = msg.split("|")
     i = int(parts[1])
    
@@ -165,6 +189,7 @@ def handshake(msg, addr):
         print(addr[1])
         drone =  Drone(i, parts[2], addr[0], addr[1])
         drones.append(drone)
+        droneNumber = (droneNumber+1)
         for adrone in drones:
             print(adrone)
         updateList()
@@ -177,20 +202,24 @@ def handshake(msg, addr):
             drones[i].port = addr[1]
     droneList.update()    
 def sendMessage(ipAddress, port, msg):
-    print("sendMessage")
-    print(ipAddress)
-    print(port)
-    print(msg)
-    print("----------------------------")    
-    bMsg = msg.encode("ascii")
-    sendSocket.sendto(bMsg, (ipAddress, int(port)))
-    print("sent message")
+    try:
+        print("sendMessage")
+        print(ipAddress)
+        print(port)
+        print(msg)
+        print("----------------------------")    
+        bMsg = msg.encode("ascii")
+        sendSocket.sendto(bMsg, (ipAddress, int(port)))
+        print("sent message")
+    except:
+        print("Could Not Send Message")
 def manualControl():
-    listener =  Listener(on_press = show, on_release = release)   
-    listener.start()
-    global yaw, roll, pitch, throttle, keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, shouldQuit
+    global yaw, roll, pitch, throttle, keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, shouldQuit, manualyes
     global selDrone
     global selDroneTK
+    listener =  Listener(on_press = show, on_release = release)   
+    listener.start()
+
     # yaw = 0
     # keyQ = False
     # keyE = False
@@ -204,6 +233,7 @@ def manualControl():
     # keyAU = False
     # keyAD = False
     # shouldQuit = False
+    print("hewiufh")
     while True:
         if keyQ:
             yaw -= 1
@@ -222,8 +252,9 @@ def manualControl():
         elif keyAD:
             throttle -= 5
         if shouldQuit:
-            listener.stop()
-            break
+            #listener.stop()
+            #break
+            pass
 
 
 
@@ -257,16 +288,15 @@ def manualControl():
         # print(roll, " -- roll")
         # print(pitch, " -- pitch")
         # print(throttle, " -- throttle")
-        for i in droneList.curselection():
-            selDrone = drones[i]
+        # for i in droneList.curselection():
+        #     selDrone = drones[i]
             #print(selDrone)
         
-        #print(selDrone.ipAddress)
+        #print(selDrone.ipAddress)Fa
         if (manualyes == True):
             sendMessage(selDrone.ipAddress, selDrone.port, "MAN" + "|" + "0.0.0.0" + "|" + str(yaw) + "|" + str(roll) + "|" + str(pitch) + "|" + str(throttle) + "|")
-            print(yaw)
+            print("sent message")
         #sendMessage(selDrone.ipAddress, selDrone.port, yaw + str(i))
-
         
         time.sleep(0.01)
 
@@ -286,7 +316,7 @@ def listDrones():
         print(drone.name, drone.ipAddress, drone.port, "\t") 
 
 def listen(q_out, q_in):#happens on a separate thread
-    
+    print("Listener Thread began")
     while True:
         #check if we need to stop--grab from q_in  
         data = b""    #the b prefix makes it byte data
@@ -314,8 +344,10 @@ def listen(q_out, q_in):#happens on a separate thread
         #     handshake(parts, addr)
     print("goodbye")
 def addDrone():
+    global droneNumber
     #this is just to test if tkinter will add them to the listbox on a button press.
     drones.append(Drone(8, "test", "none", 17))
+    droneNumber = (droneNumber+1)
     print(str(drones))
 def checkQueue(q_in):
     global selDrone
@@ -357,8 +389,11 @@ maxDrones = 3
 drones = []
 #these next two lines are for testing only. Remove them
 drones.append(Drone(0, "one", "10.20.18.23", 85))
+droneNumber = (droneNumber+1)
 drones.append(Drone(1, "two", "10.20.18.23", 85))
+droneNumber = (droneNumber+1)
 drones.append(Drone(2, "three", "192.168.4.22", 80))
+droneNumber = (droneNumber+1)
 selDrone = drones[0]
 
 #----- Setup our GUI --------
@@ -417,9 +452,10 @@ class App(customtkinter.CTk):
         self.sidebar_frame.grid_rowconfigure(4, weight=1)
         self.logo_label = customtkinter.CTkLabel(self.sidebar_frame, text="Swarm Control Module", font=customtkinter.CTkFont(size=20, weight="bold"))
         self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
-        self.sidebar_button_1 = customtkinter.CTkButton(self.sidebar_frame, command=self.sidebar_button_event, text="Enable Drone")
+        self.sidebar_button_1 = customtkinter.CTkButton(self.sidebar_frame, command=lambda: addDrone(), text="Enable Drone")
+        #self.sidebar_button_event  -------------REMOVEED TEMP FOR TEST
         self.sidebar_button_1.grid(row=1, column=0, padx=20, pady=10)
-        self.sidebar_button_2 = customtkinter.CTkButton(self.sidebar_frame, command=self.sidebar_button_event, text="Disable Drone")
+        self.sidebar_button_2 = customtkinter.CTkButton(self.sidebar_frame, command=lambda: introToAP(), text="Disable Drone")
         self.sidebar_button_2.grid(row=2, column=0, padx=20, pady=10)
         self.sidebar_button_3 = customtkinter.CTkButton(self.sidebar_frame, command=self.sidebar_button_event, text="Test")
         self.sidebar_button_3.grid(row=3, column=0, padx=20, pady=10)
@@ -454,8 +490,63 @@ class App(customtkinter.CTk):
         self.tabview.tab("Control").grid_columnconfigure(0, weight=1)  # configure grid of individual tabs
         self.tabview.tab("Info").grid_columnconfigure(0, weight=1)
 
-        self.optionmenu_1 = customtkinter.CTkOptionMenu(self.tabview.tab("Control"), dynamic_resizing=False,
-                                                        values=["Value 1", "Value 2", "Value Long Long Long"])
+
+
+        self.optionmenu_1 = customtkinter.CTkOptionMenu(self.tabview.tab("Control"), dynamic_resizing=True) #creates the optionmenu
+        selectedDrone = self.optionmenu_1.get()
+        def setDroneName():
+            global droneName0, droneName1, droneName2, droneName3, droneName4, droneName5, droneName6, droneName7, drones, selectedDrone
+  
+            try:
+                droneName0 = drones[0].name
+            except:
+                droneName0 = "Drone Connecting..."
+            try:
+                droneName1 = drones[1].name
+            except:
+                droneName1 = "Drone Connecting..."
+            try:
+                droneName2 = drones[2].name
+            except:
+                droneName2 = "Drone Connecting..."
+            try:
+                droneName3 = drones[3].name
+            except:
+                droneName3 = "Drone Connecting..."
+            try:
+                droneName4 = drones[4].name
+            except:
+                droneName4 = "Drone Connecting..."
+            try:
+                droneName5 = drones[5].name
+            except:
+                droneName5 = "Drone Connecting..."
+            try:
+                droneName6 = drones[6].name
+            except:
+                droneName6 = "Drone Connecting..."
+            try:
+                droneName7 = drones[7].name
+            except:
+                droneName7 = "Drone Connecting..."
+            self.optionmenu_1.configure(command=lambda x: updateDroneNames(),
+                                                        values=[droneName0, droneName1, droneName2, droneName3, droneName4, droneName5, droneName6, droneName7])
+            
+        def updateDroneNames():
+            global selectedDrone
+            selectedDrone = self.optionmenu_1.get() #SELECTED DRONE AS A NAME
+            print("-----------------------------------------Drone List Updated-----------------------------------------")
+            print("Drone " + selectedDrone + " now selected.")
+            setDroneName() #updates the list
+
+            for i in range(len(drones)):
+                if (selectedDrone == str(drones[i].name)):
+                    selDrone = drones[i]
+                    print ("Drone " + selDrone.name + " Connected with Port: " + str(selDrone.port) + " and IP: " + str(selDrone.ipAddress))
+        setDroneName()
+        self.optionmenu_1.configure(command=lambda x: updateDroneNames(),
+                                                        values=[droneName0, droneName1, droneName2, droneName3, droneName4, droneName5, droneName6, droneName7])
+        
         self.optionmenu_1.grid(row=0, column=0, padx=20, pady=(20, 10))
         self.combobox_1 = customtkinter.CTkComboBox(self.tabview.tab("Control"),
                                                     values=["Value 1", "Value 2", "Value Long....."])
@@ -472,9 +563,9 @@ class App(customtkinter.CTk):
         self.radio_var = tkinter.IntVar(value=0)
         self.label_radio_group = customtkinter.CTkLabel(master=self.radiobutton_frame, text="Mode and Stage Control:")
         self.label_radio_group.grid(row=0, column=2, columnspan=1, padx=10, pady=10, sticky="")
-        self.radio_button_1 = customtkinter.CTkRadioButton(master=self.radiobutton_frame, variable=self.radio_var, value=0, text="Manual Mode")
+        self.radio_button_1 = customtkinter.CTkRadioButton(master=self.radiobutton_frame, variable=self.radio_var, value=0, text="Swarm Mode", command=lambda: MODESwarm())
         self.radio_button_1.grid(row=1, column=2, pady=10, padx=20, sticky="n")
-        self.radio_button_2 = customtkinter.CTkRadioButton(master=self.radiobutton_frame, variable=self.radio_var, value=1, text="Swarm Mode")
+        self.radio_button_2 = customtkinter.CTkRadioButton(master=self.radiobutton_frame, variable=self.radio_var, value=1, text="Manual Mode", command = lambda: MODEManual())
         self.radio_button_2.grid(row=2, column=2, pady=10, padx=20, sticky="n")
         self.radio_button_3 = customtkinter.CTkRadioButton(master=self.radiobutton_frame, variable=self.radio_var, value=2)
         self.radio_button_3.grid(row=3, column=2, pady=10, padx=20, sticky="n")
@@ -579,11 +670,6 @@ class App(customtkinter.CTk):
         print("sidebar_button click")
 
 
-#app = App()
-#app.mainloop()
-
-
-
 
 
 
@@ -607,13 +693,14 @@ t = Thread(target=listen, args=(qFromComms, qToComms))
 t.start()
 m = Thread(target=manualControl, args=())
 m.start()
-root.after(1000, checkQueue, qFromComms)
+#root.after(1000, checkQueue, qFromComms)
 # root.bind("<<updateevent>>", updateDronesList)
-root.mainloop()
+#root.mainloop()
+app = App()
+app.after(1000, checkQueue, qFromComms)
+app.mainloop()
 qToComms.put("TERMINATE") #tell the subloop on the backup thread to quit.
 t = qFromComms.get(timeout=3.0)
 #give it a chance to quit
 print("all done")
 exit(0)
-
-
