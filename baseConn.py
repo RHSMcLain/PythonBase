@@ -202,17 +202,15 @@ def handshake(msg, addr):
             drones[i].port = addr[1]
     droneList.update()    
 def sendMessage(ipAddress, port, msg):
-    try:
-        print("sendMessage")
-        print(ipAddress)
-        print(port)
-        print(msg)
-        print("----------------------------")    
-        bMsg = msg.encode("ascii")
-        sendSocket.sendto(bMsg, (ipAddress, int(port)))
-        print("sent message")
-    except:
-        print("Could Not Send Message")
+    print("sendMessage")
+    print(ipAddress)
+    print(port)
+    print(msg)
+    print("----------------------------")    
+    bMsg = msg.encode("ascii")
+    sendSocket.sendto(bMsg, (ipAddress, int(port)))
+    print("sent message")
+    time.sleep(0.0001)
 def manualControl():
     global yaw, roll, pitch, throttle, keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, shouldQuit, manualyes
     global selDrone
