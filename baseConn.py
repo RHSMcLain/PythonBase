@@ -64,6 +64,8 @@ manualyes = False
 global droneNumber
 droneNumber = 0
 global selectedDrone
+global killswitch
+killswitch = 1000
 selectedDrone = "None"
 curr_time = round(time.time()*1000)
 
@@ -212,7 +214,7 @@ def sendMessage(ipAddress, port, msg):
     print("sent message")
     time.sleep(0.0001)
 def manualControl():
-    global yaw, roll, pitch, throttle, keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, shouldQuit, manualyes
+    global yaw, roll, pitch, throttle, keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, shouldQuit, manualyes, killswitch
     global selDrone
     global selDroneTK
     listener =  Listener(on_press = show, on_release = release)   
@@ -292,7 +294,7 @@ def manualControl():
         
         #print(selDrone.ipAddress)Fa
         if (manualyes == True):
-            sendMessage(selDrone.ipAddress, selDrone.port, "MAN" + "|" + "0.0.0.0" + "|" + str(yaw) + "|" + str(roll) + "|" + str(pitch) + "|" + str(throttle) + "|")
+            sendMessage(selDrone.ipAddress, selDrone.port, "MAN" + "|" + "0.0.0.0" + "|" + str(yaw) + "|" + str(roll) + "|" + str(pitch) + "|" + str(throttle) + "|" + str(killswitch) + "|")
             print("sent message")
         #sendMessage(selDrone.ipAddress, selDrone.port, yaw + str(i))
         
@@ -347,6 +349,17 @@ def addDrone():
     drones.append(Drone(8, "test", "none", 17))
     droneNumber = (droneNumber+1)
     print(str(drones))
+def kill():
+    global killswitch
+    killswitch = 1700
+    print("======================================KILL SWITCH ACTIVATED=======================================")
+    print("======================================KILL SWITCH ACTIVATED=======================================")
+    print("======================================KILL SWITCH ACTIVATED=======================================")
+    print("======================================KILL SWITCH ACTIVATED=======================================")
+    print("======================================KILL SWITCH ACTIVATED=======================================")
+    print("======================================KILL SWITCH ACTIVATED=======================================")
+    print("======================================KILL SWITCH ACTIVATED=======================================")
+    print("======================================KILL SWITCH ACTIVATED=======================================")
 def checkQueue(q_in):
     global selDrone
     global selDroneTK
@@ -450,10 +463,10 @@ class App(customtkinter.CTk):
         self.sidebar_frame.grid_rowconfigure(4, weight=1)
         self.logo_label = customtkinter.CTkLabel(self.sidebar_frame, text="Swarm Control Module", font=customtkinter.CTkFont(size=20, weight="bold"))
         self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
-        self.sidebar_button_1 = customtkinter.CTkButton(self.sidebar_frame, command=lambda: addDrone(), text="Enable Drone")
+        self.sidebar_button_1 = customtkinter.CTkButton(self.sidebar_frame, command=lambda: kill(), text="KillSwitch")
         #self.sidebar_button_event  -------------REMOVEED TEMP FOR TEST
         self.sidebar_button_1.grid(row=1, column=0, padx=20, pady=10)
-        self.sidebar_button_2 = customtkinter.CTkButton(self.sidebar_frame, command=lambda: introToAP(), text="Disable Drone")
+        self.sidebar_button_2 = customtkinter.CTkButton(self.sidebar_frame, command=lambda: introToAP(), text="Connect To AP")
         self.sidebar_button_2.grid(row=2, column=0, padx=20, pady=10)
         self.sidebar_button_3 = customtkinter.CTkButton(self.sidebar_frame, command=self.sidebar_button_event, text="Test")
         self.sidebar_button_3.grid(row=3, column=0, padx=20, pady=10)
@@ -531,7 +544,7 @@ class App(customtkinter.CTk):
                                                         values=[droneName0, droneName1, droneName2, droneName3, droneName4, droneName5, droneName6, droneName7])
             
         def updateDroneNames():
-            global selectedDrone
+            global selectedDrone, selDrone
             selectedDrone = self.optionmenu_1.get() #SELECTED DRONE AS A NAME
             print("-----------------------------------------Drone List Updated-----------------------------------------")
             print("Drone " + selectedDrone + " now selected.")
