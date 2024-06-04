@@ -116,7 +116,7 @@ def show(key):
     global yaw, roll, pitch, throttle, keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, shouldQuit
     try:
         if key == Key.up:
-            print("Up")
+            #print("Up")
             keyAU = True
             return
         if key == Key.down:
@@ -204,14 +204,14 @@ def handshake(msg, addr):
             drones[i].port = addr[1]
     droneList.update()    
 def sendMessage(ipAddress, port, msg):
-    print("sendMessage")
-    print(ipAddress)
-    print(port)
-    print(msg)
-    print("----------------------------")    
+    #print("sendMessage")
+    #print(ipAddress)
+    #print(port)
+    #print(msg)
+    #print("----------------------------")    
     bMsg = msg.encode("ascii")
     sendSocket.sendto(bMsg, (ipAddress, int(port)))
-    print("sent message")
+    #print("sent message")
     time.sleep(0.0001)
 def manualControl():
     global yaw, roll, pitch, throttle, keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, shouldQuit, manualyes, killswitch
@@ -294,8 +294,7 @@ def manualControl():
         
         #print(selDrone.ipAddress)Fa
         if (manualyes == True):
-            sendMessage(selDrone.ipAddress, selDrone.port, "MAN" + "|" + "0.0.0.0" + "|" + str(yaw) + "|" + str(roll) + "|" + str(pitch) + "|" + str(throttle) + "|" + str(killswitch) + "|")
-            print("sent message")
+            sendMessage(selDrone.ipAddress, selDrone.port, "MAN" + "|" + ip + "|" + str(yaw) + "|" + str(pitch) + "|" + str(roll) + "|" + str(throttle) + "|" + str(killswitch) + "|")
         #sendMessage(selDrone.ipAddress, selDrone.port, yaw + str(i))
         
         time.sleep(0.01)
@@ -360,6 +359,13 @@ def kill():
     print("======================================KILL SWITCH ACTIVATED=======================================")
     print("======================================KILL SWITCH ACTIVATED=======================================")
     print("======================================KILL SWITCH ACTIVATED=======================================")
+    app.sidebar_button_1.configure(fg_color="Black", text="=KILLED=")
+    app.radio_button_1.configure(fg_color="Red", text="Drone Killed", text_color="Red")
+    app.radio_button_2.configure(fg_color="Red", text="Drone Killed", text_color="Red")
+    app.radio_button_3.configure(fg_color="Red", text="Drone Killed", text_color="Red")
+    
+
+
 def checkQueue(q_in):
     global selDrone
     global selDroneTK
@@ -463,7 +469,7 @@ class App(customtkinter.CTk):
         self.sidebar_frame.grid_rowconfigure(4, weight=1)
         self.logo_label = customtkinter.CTkLabel(self.sidebar_frame, text="Swarm Control Module", font=customtkinter.CTkFont(size=20, weight="bold"))
         self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
-        self.sidebar_button_1 = customtkinter.CTkButton(self.sidebar_frame, command=lambda: kill(), text="KillSwitch")
+        self.sidebar_button_1 = customtkinter.CTkButton(self.sidebar_frame, command=lambda: kill(), text="Kill Switch", fg_color="Red")
         #self.sidebar_button_event  -------------REMOVEED TEMP FOR TEST
         self.sidebar_button_1.grid(row=1, column=0, padx=20, pady=10)
         self.sidebar_button_2 = customtkinter.CTkButton(self.sidebar_frame, command=lambda: introToAP(), text="Connect To AP")
@@ -542,7 +548,7 @@ class App(customtkinter.CTk):
                 droneName7 = "Drone Connecting..."
             self.optionmenu_1.configure(command=lambda x: updateDroneNames(),
                                                         values=[droneName0, droneName1, droneName2, droneName3, droneName4, droneName5, droneName6, droneName7])
-            
+        setDroneName()
         def updateDroneNames():
             global selectedDrone, selDrone
             selectedDrone = self.optionmenu_1.get() #SELECTED DRONE AS A NAME
@@ -554,7 +560,7 @@ class App(customtkinter.CTk):
                 if (selectedDrone == str(drones[i].name)):
                     selDrone = drones[i]
                     print ("Drone " + selDrone.name + " Connected with Port: " + str(selDrone.port) + " and IP: " + str(selDrone.ipAddress))
-        setDroneName()
+            setDroneName()
         self.optionmenu_1.configure(command=lambda x: updateDroneNames(),
                                                         values=[droneName0, droneName1, droneName2, droneName3, droneName4, droneName5, droneName6, droneName7])
         
