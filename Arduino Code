@@ -56,10 +56,9 @@ void konnercode(){
     if (skibidiState == -1){
     compare = 1000;       
     throttle = 885;
-    killswitch = 1000;
     Arm(false);     
     DataSetSend();
-    if(millis() - t > 10000) //sending init data for 10 seconds
+    if(millis() - t > 1000) //sending init data for 10 seconds
     {
       t = millis();
       skibidiState = 0; //it's time to arm
@@ -70,10 +69,10 @@ void konnercode(){
     //set arming signals
     Arm(true);
     DataSetSend();
-    if (millis() - t > 10000){
+    if (millis() - t > 500){
       rampUpTime = millis();
       //throttle = 900;
-      //skibidiState = 2; // 1 is intstant, 2 is slow incraments of 50
+      skibidiState = 1; // 1 is intstant, 2 is slow incraments of 50
       t = millis();
     }
   }
@@ -85,7 +84,7 @@ void konnercode(){
       //tman = 1500;
       //yaw = 1500;
       //throttle = 1250;
-      killswitch = 1000;
+      //killswitch = 1000;
     }  
     else if(millis() - t < 6000)
     {    
@@ -109,7 +108,7 @@ void konnercode(){
       //throttle = 885;        
       // killswitch = 1700;
     }
-    DataSetSend();
+    //DataSetSend();
   } // end skibidiState 1
   // if(skibidiState == 2)
   // {
@@ -125,6 +124,7 @@ void konnercode(){
   //   }
   //  
   // }
+  /*
   Serial.println("Output");
   for (int8_t i = 0; i < data.NUM_CH; i++){ //print data we're sending.
       Serial.print(i);
@@ -142,7 +142,9 @@ void konnercode(){
   Serial.print("skibidiState is: ");
   Serial.println(skibidiState);
   /**/
+  /*
   sbusInput = sbus_rx.data();
+  
   Serial.println("Input");
   for(int i = 0; i < sbusInput.NUM_CH; i++)
   {
@@ -162,7 +164,7 @@ void konnercode(){
   // Serial.print(data.lost_frame);
   // Serial.print("\t");
   // Serial.println(data.failsafe);
-   DataSetSend();
+   //DataSetSend();
   if(skibidiState == -1 || skibidiState == 0){ //Light Blinker
     if(millis()- blinkTime >= compare){
       LightSRLatch();
@@ -296,7 +298,7 @@ void MillisStuff() { //specifies whatever this stuff is for use in the loop, to 
     token = strtok(buffer, "|");
     int i = 0;
     while (token != 0){
-      Serial.println(token);
+      //Serial.println(token);
       switch(i){
         case 0:
           msg.cmd = token;
@@ -310,7 +312,7 @@ void MillisStuff() { //specifies whatever this stuff is for use in the loop, to 
         case 3:
           msg.tman = atoi(token);  //pitch
           break;
-        case 4:
+        case 4: 
           msg.roll = atoi(token);
           break;
         case 5:
@@ -319,12 +321,12 @@ void MillisStuff() { //specifies whatever this stuff is for use in the loop, to 
         case 6:
           msg.killswitch = atoi(token);
           break;
+        }
         roll = msg.roll;
         tman = msg.tman;
         throttle = msg.throttle;
         yaw = msg.yaw;
         killswitch = msg.killswitch;
-        }
       i++;
       token = strtok(NULL, "|");
       
@@ -390,8 +392,7 @@ void setup() {
     Udp.beginPacket("192.168.4.22", 80);
     Udp.write("State: 0 -> 1 |Connected|");
     Udp.endPacket();
-  
-  state = 1;
+    state = 1;
   
   Udp.beginPacket("192.168.4.22", 80);
   Udp.write(ReplyBuffer);
@@ -404,25 +405,25 @@ void listen(){
 
   if (packetSize) {
 
-    Serial.print("Received packet of size ");
+    //Serial.print("Received packet of size ");
 
-    Serial.println(packetSize);
+    //Serial.println(packetSize);
 
-    Serial.print("From ");
+    //Serial.print("From ");
 
     IPAddress remoteIp = Udp.remoteIP();
 
-    Serial.print(remoteIp);
+    //Serial.print(remoteIp);
 
-    Serial.print(", port ");
+    //Serial.print(", port ");
 
-    Serial.println(Udp.remotePort());
+    //Serial.println(Udp.remotePort());
 
     // read the packet into packetBufffer
 
     int len = Udp.read(packetBuffer, 255);
 
-    Serial.println(packetBuffer);
+    //Serial.println(packetBuffer);
 
     if (len > 0) {
 
@@ -439,7 +440,7 @@ void listen(){
             }
     }
       else if (state == 5){
-        Serial.println("listening for manual message");
+        //Serial.println("listening for manual message");
         ManualControlMessage msg = parseMessage(packetBuffer);
         if (msg.cmd == "MAN"){
 
@@ -456,16 +457,15 @@ void listen(){
   }
 }
 void loop() {
-  MillisStuff();
+  //MillisStuff();
   konnercode();
   listen();
   DataSetSend();
-  if (state == 1){
+  if (state == 1 && skibidiState == 1){
     Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
     Udp.write("State: 1 -> 2");
     Udp.endPacket();
     state = 2;
-    
   }
   else if (state == 2){ 
     Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
@@ -474,7 +474,7 @@ void loop() {
     state = 3;
   }
   else if (state == 4) {
-      Serial.println("fewuifuweeee");
+      //Serial.println("fewuifuweeee");
       Udp.beginPacket(bsip, 5005);
       Udp.write("HND|-1|NEWDRONE");
       Udp.endPacket();
