@@ -27,9 +27,9 @@ def getMyIP():
         # print(f"Internal IPv4 Address for {hostname}: {ipv4_address}")
         # 
         #
-        #ip = ni.ifaddresses('en1')[ni.AF_INET][0]['addr']
-        #UDP_IP = ip
-        ip = "0.0.0.0"
+        ip = ni.ifaddresses('en1')[ni.AF_INET][0]['addr']
+        UDP_IP = ip
+        #ip = "0.0.0.0"
         UDP_PORT = 5005
         print(ip)
     except socket.gaierror as e:
@@ -39,9 +39,9 @@ def getMyIP():
         print(f"An unexpected error occurred: {e}")
 
 getMyIP()
-#ip = ni.ifaddresses('en1')[ni.AF_INET][0]['addr']
+ip = ni.ifaddresses('en1')[ni.AF_INET][0]['addr']
  #ask mclain how to do this on windows
-ip = "0.0.0.0"
+#ip = "0.0.0.0"
 UDP_IP = ip
 UDP_PORT = 5005
 
@@ -197,10 +197,10 @@ def handshake(msg, addr):
         drone =  Drone(i, parts[2], addr[0], addr[1])
         drones.append(drone)
         droneNumber = (droneNumber+1)
-        app.my_label.grid(row=1, column=0, padx=2, pady=2)
+        app.my_label.configure(text="DRONE CONNECTED", image=my_image, size=(150,150))
         for adrone in drones:
             print(adrone)
-        updateList()
+        #updateList()
         #sendMessage(drone.ipAddress, drone.port, "HSC|" + str(i))
 
     else:
@@ -208,7 +208,7 @@ def handshake(msg, addr):
             #we could update here
             drones[i].ipAddress = addr[0]
             drones[i].port = addr[1]
-    droneList.update()    
+    #droneList.update()    
 def sendMessage(ipAddress, port, msg):
     #print("sendMessage")
     #print(ipAddress)
@@ -305,13 +305,13 @@ def manualControl():
         
         time.sleep(0.01)
 
-def updateList():
+#def updateList():
     #clear the list box
-    droneList.delete(0, len(drones)-1)
+    #droneList.delete(0, len(drones)-1)
 
     #walk through drones
-    for i in range(len(drones)):
-        droneList.insert(i, str(drones[i]))
+    #for i in range(len(drones)):
+        #droneList.insert(i, str(drones[i]))
     #insert all the drone elements
 
 
@@ -349,12 +349,12 @@ def listen(q_out, q_in):#happens on a separate thread
         #     handshake(parts, addr)
     print("goodbye")
 def addDrone():
-    global droneNumber
+    global droneNumber, app
     #this is just to test if tkinter will add them to the listbox on a button press.
     drones.append(Drone(8, "test", "none", 17))
     droneNumber = (droneNumber+1)
     print(str(drones))
-    app.my_label.configure(text="DRONE CONNECTED", image=my_image)
+    app.my_label.configure(text="DRONE CONNECTED", image=my_image, size=(150,150))
 def kill():
     global killswitch
     killswitch = 1700
@@ -398,7 +398,7 @@ def checkQueue(q_in):
         if cmd == "HND":
             #HANDSHAKE
             handshake(msg, (addr, port))
-    root.after(1000, checkQueue, q_in)
+    app.after(1000, checkQueue, q_in)
 
 
 #--------------------------------------------
@@ -493,8 +493,8 @@ class App(customtkinter.CTk):
         my_image = customtkinter.CTkImage(light_image=Image.open('connecteddrone.jpg'),
         dark_image=Image.open('connecteddrone.jpg'),
         size=(150,150)) # WidthxHeight
-        my_label = customtkinter.CTkLabel(self, text="")
-        my_label.grid(row=1, column=0, padx=2, pady=2)
+        self.my_label = customtkinter.CTkLabel(self, text="")
+        self.my_label.grid(row=1, column=0, padx=2, pady=2)
         
 
 
@@ -657,7 +657,7 @@ class App(customtkinter.CTk):
 
 
         listVar = StringVar(value = drones)
-        droneList = Listbox(width =10, height = 25, listvariable = listVar)
+        #droneList = Listbox(width =10, height = 25, listvariable = listVar)
         selDroneTK = tk.StringVar()
 
         # set default values
