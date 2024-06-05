@@ -26,8 +26,10 @@ def getMyIP():
         # ipv4_address = socket.gethostbyname(hostname + ".local")
         # print(f"Internal IPv4 Address for {hostname}: {ipv4_address}")
         # 
-        ip = ni.ifaddresses('en1')[ni.AF_INET][0]['addr']
-        UDP_IP = ip
+        #
+        #ip = ni.ifaddresses('en1')[ni.AF_INET][0]['addr']
+        #UDP_IP = ip
+        ip = "0.0.0.0"
         UDP_PORT = 5005
         print(ip)
     except socket.gaierror as e:
@@ -37,8 +39,9 @@ def getMyIP():
         print(f"An unexpected error occurred: {e}")
 
 getMyIP()
-ip = ni.ifaddresses('en1')[ni.AF_INET][0]['addr']
+#ip = ni.ifaddresses('en1')[ni.AF_INET][0]['addr']
  #ask mclain how to do this on windows
+ip = "0.0.0.0"
 UDP_IP = ip
 UDP_PORT = 5005
 
@@ -66,6 +69,8 @@ droneNumber = 0
 global selectedDrone
 global killswitch
 killswitch = 1000
+my_image = customtkinter.CTkImage(light_image=Image.open('connecteddrone.jpg'))
+dark_image=Image.open('connecteddrone.jpg')
 selectedDrone = "None"
 curr_time = round(time.time()*1000)
 
@@ -192,6 +197,7 @@ def handshake(msg, addr):
         drone =  Drone(i, parts[2], addr[0], addr[1])
         drones.append(drone)
         droneNumber = (droneNumber+1)
+        app.my_label.grid(row=1, column=0, padx=2, pady=2)
         for adrone in drones:
             print(adrone)
         updateList()
@@ -348,6 +354,7 @@ def addDrone():
     drones.append(Drone(8, "test", "none", 17))
     droneNumber = (droneNumber+1)
     print(str(drones))
+    app.my_label.configure(text="DRONE CONNECTED", image=my_image)
 def kill():
     global killswitch
     killswitch = 1700
@@ -369,9 +376,9 @@ def kill():
 def checkQueue(q_in):
     global selDrone
     global selDroneTK
-    selDroneTK.set(selDrone.ipAddress)
+    #selDroneTK.set(selDrone.ipAddress)
     #lblDroneIP.config(text = selDrone.ipAddress)
-    root.update_idletasks()
+    #root.update_idletasks()
     #print(selDrone.ipAddress)
     if (not q_in.empty()):
         print("checking queue")
@@ -413,7 +420,9 @@ drones.append(Drone(2, "three", "192.168.4.22", 80))
 droneNumber = (droneNumber+1)
 selDrone = drones[0]
 
-#----- Setup our GUI --------
+#----- Setup our OLD GUI --------
+#OLD GUI==============================
+'''
 root = Tk()
 root.geometry("400x400")
 root.title("Drone Manager")
@@ -435,6 +444,8 @@ selDroneTK = tk.StringVar(root)
 button = Button(root,text = "Test!", width=5, height=5, command=lambda: introToAP()).grid()
 ttk.Label(root, text="Name | IP | Port").grid(column = 2, row = 1,padx=50)
 lblDroneIP = ttk.Label(root, textvariable=selDroneTK).grid(column = 2, row = 2,padx=50)
+'''
+
 
 #-------------------------------------------------------------------------------------------------
 #------------------------------------CUSTOM TKINTER GUI----------------------------
@@ -476,6 +487,18 @@ class App(customtkinter.CTk):
         self.sidebar_button_2.grid(row=2, column=0, padx=20, pady=10)
         self.sidebar_button_3 = customtkinter.CTkButton(self.sidebar_frame, command=self.sidebar_button_event, text="Test")
         self.sidebar_button_3.grid(row=3, column=0, padx=20, pady=10)
+
+
+
+        my_image = customtkinter.CTkImage(light_image=Image.open('connecteddrone.jpg'),
+        dark_image=Image.open('connecteddrone.jpg'),
+        size=(150,150)) # WidthxHeight
+        my_label = customtkinter.CTkLabel(self, text="")
+        my_label.grid(row=1, column=0, padx=2, pady=2)
+        
+
+
+
         self.appearance_mode_label = customtkinter.CTkLabel(self.sidebar_frame, text="Appearance Mode:", anchor="w")
         self.appearance_mode_label.grid(row=5, column=0, padx=20, pady=(10, 0))
         self.appearance_mode_optionemenu = customtkinter.CTkOptionMenu(self.sidebar_frame, values=["Light", "Dark", "System"],
@@ -625,8 +648,20 @@ class App(customtkinter.CTk):
         self.checkbox_3 = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame, text="Assaf")
         self.checkbox_3.grid(row=3, column=0, pady=20, padx=20, sticky="n")
 
+
+        #----------- image
+
+
+
+
+
+
+        listVar = StringVar(value = drones)
+        droneList = Listbox(width =10, height = 25, listvariable = listVar)
+        selDroneTK = tk.StringVar()
+
         # set default values
-        self.sidebar_button_3.configure(state="disabled", text="Connect to Swarm")
+        self.sidebar_button_3.configure(command=lambda: addDrone(), text="Connect to Swarm")
         self.checkbox_3.configure(state="disabled")
         self.checkbox_1.select()
         self.scrollable_frame_switches[0].select()
@@ -659,6 +694,7 @@ class App(customtkinter.CTk):
         my_progressbar.lift()
         my_progressbar.set(0)
         my_progressbar.start()
+
 
 
 #image testing-----------------
