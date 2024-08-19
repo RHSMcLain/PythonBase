@@ -16,20 +16,29 @@ from PIL import Image
 #pip3 install netifaces
 #python3 -m pip install customtkinter
 #python3 -m pip install --upgrade Pillow
-global UDP_IP
+global UDP_IP, ip, ipv4_address
+ip = 0
 UDP_IP = 0
 def getMyIP():
     try:
+        global ipv4_address
         hostname = socket.gethostname()
         print(hostname)
         print("00000")
-        # ipv4_address = socket.gethostbyname(hostname + ".local")
-        # print(f"Internal IPv4 Address for {hostname}: {ipv4_address}")
+        #IP ADDRESS FOR WINDOWS OS -------------------------------------------------
+        ipv4_address = socket.gethostbyname(hostname + ".local")
+        print(f"Internal IPv4 Address for {hostname}: {ipv4_address}")
+        ip = ipv4_address
+        #IP ADDRESS FOR WINDOWS OS -------------------------------------------------
         # 
-        #
+
+
+
+        # IP ADRESSS FOR MAC OS =================================================================
         #ip = ni.ifaddresses('en1')[ni.AF_INET][0]['addr']
         #UDP_IP = ip
-        ip = "0.0.0.0"
+        #ip = "0.0.0.0"
+        # IP ADRESSS FOR MAC OS =================================================================
         UDP_PORT = 5005
         print(ip)
     except socket.gaierror as e:
@@ -39,10 +48,14 @@ def getMyIP():
         print(f"An unexpected error occurred: {e}")
 
 getMyIP()
+
+# IP ADRESSS FOR MAC OS =================================================================
 #ip = ni.ifaddresses('en1')[ni.AF_INET][0]['addr']
- #ask mclain how to do this on windows
-ip = "0.0.0.0"
-UDP_IP = ip
+# IP ADRESSS FOR MAC OS =================================================================
+
+#ip = "0.0.0.0"
+UDP_IP = ipv4_address
+ip = ipv4_address
 UDP_PORT = 5005
 
 #BRENDAN CODE _____________________________________________________________________________________________________
