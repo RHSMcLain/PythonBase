@@ -1,4 +1,4 @@
-#include <ESP8266WiFi.h>
+#include <ESP8266WiFi.h> //https://github.com/esp8266/Arduino/tree/master
 #include <WiFiUDP.h>
 
 IPAddress local_IP(192,168,4,22);
@@ -14,7 +14,7 @@ char ReplyBuffer[256] = "reply";       // a string to send back
 
 void setup()
 {
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println();
 
   Serial.print("Setting soft-AP configuration ... ");
