@@ -97,10 +97,12 @@ def clamp(val):
         val = highLimit   
     return val
 def introToAP():
+    global sock
     #tell the AP that we are the base station. 
     #AP needs to save that IP address to tell it to drones (so they can connect to the base station)
     sendMessage("192.168.4.22", 80, "BaseStationIP")
     print ("sent message to AP")
+    print("Listening for Response from AP.........")
     #listen 
     #TODO: PUT IN A RESEND EVERY FEW SECONDS
     #CODE FOR THAT INCLUDES: curr_time = round(time.time()*1000)
@@ -110,9 +112,9 @@ def introToAP():
     #check if we need to stop--grab from q_in  
         data = b""    #the b prefix makes it byte dat
         try:
-            print("Listening")
             data, addr = sock.recvfrom(1024)
-            print("decoding")
+            print(data)
+            print("Decoding Data...")
             strData = data.decode("utf-8")
             print("Received message %s" % data)
             
@@ -220,13 +222,14 @@ def handshake(msg, addr):
             drones[i].port = addr[1]
     #droneList.update()    
 def sendMessage(ipAddress, port, msg):
-    #print("sendMessage")
-    #print(ipAddress)
-    #print(port)
-    #print(msg)
-    #print("----------------------------")    
+    global sock
+    print("sendMessage")
+    print(ipAddress)
+    print(port)
+    print(msg)
+    print("----------------------------")    
     bMsg = msg.encode("ascii")
-    sendSocket.sendto(bMsg, (ipAddress, int(port)))
+    sock.sendto(bMsg, (ipAddress, int(port)))
     #print("sent message")
     time.sleep(0.0001)
 def manualControl():
@@ -382,7 +385,14 @@ def kill():
     app.radio_button_3.configure(fg_color="Red", text="Drone Killed", text_color="Red")
     
 
-
+def quit():
+    qToComms.put("TERMINATE") #tell the subloop on the backup thread to quit.
+    t = qFromComms.get(timeout=3.0)
+    #give it a chance to quit
+    print("all done")
+    app.destroy()
+    App.destroy()
+    exit()
 def checkQueue(q_in):
     global selDrone
     global selDroneTK
@@ -497,6 +507,8 @@ class App(customtkinter.CTk):
         self.sidebar_button_2.grid(row=2, column=0, padx=20, pady=10)
         self.sidebar_button_3 = customtkinter.CTkButton(self.sidebar_frame, command=self.sidebar_button_event, text="Test")
         self.sidebar_button_3.grid(row=3, column=0, padx=20, pady=10)
+        self.sidebar_button_4 = customtkinter.CTkButton(self.sidebar_frame, command=self.sidebar_button_event, text="Quit")
+        self.sidebar_button_4.grid(row=4, column=0, padx=20, pady=10)
 
 
 
@@ -672,6 +684,7 @@ class App(customtkinter.CTk):
 
         # set default values
         self.sidebar_button_3.configure(command=lambda: addDrone(), text="Connect to Swarm")
+        self.sidebar_button_4.configure(command=lambda: quit(), hover_color='Red', fg_color='Black', text_color = 'Red4')
         self.checkbox_3.configure(state="disabled")
         self.checkbox_1.select()
         self.scrollable_frame_switches[0].select()
