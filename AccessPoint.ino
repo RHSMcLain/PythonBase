@@ -4,6 +4,8 @@
 IPAddress local_IP(192,168,4,22);
 IPAddress gateway(192,168,4,9);
 IPAddress subnet(255,255,255,0);
+IPAddress BaseStationIP;
+
 unsigned int localPort = 80;
 int droneArray[3] = {1,7,9};
 
@@ -11,6 +13,16 @@ int droneArray[3] = {1,7,9};
 WiFiUDP Udp;
 char packetBuffer[256]; //buffer to hold incoming packet
 char ReplyBuffer[256] = "reply";       // a string to send back
+
+String IpAddress2String(const IPAddress& ipAddress) 
+  {
+    
+    return String(ipAddress[0]) + String(".") +\
+    String(ipAddress[1]) + String(".") +\
+    String(ipAddress[2]) + String(".") +\
+    String(ipAddress[3])  ;
+
+  }
 
 void setup()
 {
@@ -67,18 +79,31 @@ void loop() {
 
     // send a reply, to the IP address and port that sent us the packet we received
     // if (packetBuffer == 2006) {
-      if (strcmp(packetBuffer, "Drone 1")){      
-       Serial.println("It is Drone 1");
-       Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
-       Udp.write(ReplyBuffer);
-      
-      Udp.endPacket();
+      if (strcmp(packetBuffer, "BaseStationIP") == 0){      
+        Serial.println("Base Station Connected... Sending Reply");
+        Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
+        BaseStationIP = Udp.remoteIP();
+
+        Udp.write(ReplyBuffer);
+        Serial.println("-------------------------------------------------");
+        Serial.println("Returned message to Basestation:");
+        Serial.println(ReplyBuffer);
+        Serial.println("-------------------------------------------------");
+        Udp.endPacket();
      }
-     
+     if (strcmp(packetBuffer, "AmDrone") == 0){  
+        Serial.println("Drone Connected... Responding with BSIP");
+        Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
+        String baseStationIPString = IpAddress2String(BaseStationIP);
+        String bsipResponse = "BSIP|" + baseStationIPString;
+        Udp.print(bsipResponse);
+        Serial.print("BaseStation IP Sent to Drone... BSIP is: ");
+        Serial.println(BaseStationIP);
+        Udp.endPacket();
 
   }
 }
-
+}
 void printWifiStatus() {
   // print the SSID of the network you're attached to:
 
@@ -103,9 +128,9 @@ void printWifiStatus() {
   Serial.print(rssi);
 
   Serial.println(" dBm");
-
-
 }
+
+
 
 
 //pulled out of loop. We think this is trying to connect to a separate client and is not needed. 
