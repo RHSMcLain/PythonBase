@@ -102,6 +102,7 @@ void loop() {
   DroneSystems();
   DataSetSend();
   if (wifiState == 1 && droneState == 1 && status == WL_CONNECTED){
+    Serial.println("BEGINNING PACKET");
     Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
     Udp.write("State: 1 -> 2");
     Udp.endPacket();
@@ -117,7 +118,7 @@ void loop() {
     Udp.beginPacket(bsip, 5005);
     Udp.write("HND|-1|NEWDRONE");
     Udp.endPacket();
-    wifiState = 5; 
+    wifiState = 5;
   }
   if(millis() - updateTime > 5000 && serialUSB)
   {
@@ -146,6 +147,7 @@ void DroneSystems(){
   if (droneState == -1){//starting up
     blinkSpeed = 1000;       
     throttle = 885;
+    Serial.println("Drone State -1 | Pre-State");
     Arm(false);     
     if(millis() - t > 1000){
       t = millis();
@@ -474,7 +476,6 @@ void Listen(){
         }
       }
       else if (wifiState == 5){
-        //Serial.println("listening for manual message");
         ManualControlMessage msg = parseMessage(packetBuffer);
         if(serialUSB)
         {
