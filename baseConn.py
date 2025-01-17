@@ -54,7 +54,7 @@ getMyIP()
 print("UDP IP is " + str(UDP_IP))
 
 #BRENDAN CODE _____________________________________________________________________________________________________
-global yaw, roll, pitch, throttle, keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, shouldQuit
+global yaw, roll, pitch, throttle, keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, shouldQuit, navHold
 yaw = 0
 keyQ = False
 keyE = False
@@ -77,6 +77,8 @@ droneNumber = 0
 global selectedDrone
 global killswitch
 killswitch = 1000
+armVar = 1000
+navHold = 1000
 my_image = customtkinter.CTkImage(light_image=Image.open('connecteddrone.jpg'))
 dark_image=Image.open('connecteddrone.jpg')
 selectedDrone = "None"
@@ -233,7 +235,7 @@ def sendMessage(ipAddress, port, msg):
     #print("sent message")
     time.sleep(0.0001)
 def manualControl():
-    global yaw, roll, pitch, throttle, keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, shouldQuit, manualyes, killswitch
+    global yaw, roll, pitch, throttle, keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, shouldQuit, manualyes, killswitch, armVar, navHold
     global selDrone
     global selDroneTK
     listener =  Listener(on_press = show, on_release = release)   
@@ -252,7 +254,6 @@ def manualControl():
     # keyAU = False
     # keyAD = False
     # shouldQuit = False
-    print("hewiufh")
     while True:
         if keyQ:
             yaw -= 1
@@ -269,7 +270,7 @@ def manualControl():
         if keyAU:
             throttle += 1
         elif keyAD:
-            throttle -= 5
+            throttle -= 1
         if shouldQuit:
             #listener.stop()
             #break
@@ -289,10 +290,10 @@ def manualControl():
             pitch -= 1
         elif pitch < 1500 and keyW == False and keyS == False:
             pitch += 1
-        if throttle > 1000 and keyAU == False and keyAD == False:
-            throttle -= 1
-        elif throttle < 1000 and keyAU == False and keyAD == False:
-            throttle += 1
+        # if throttle > 1000 and keyAU == False and keyAD == False:
+        #     # throttle -= 1
+        # elif throttle < 1000 and keyAU == False and keyAD == False:
+        #     throttle += 1
 
         
         yaw = clamp(yaw)
@@ -313,7 +314,7 @@ def manualControl():
         
         #print(selDrone.ipAddress)Fa
         if (manualyes == True):
-            sendMessage(selDrone.ipAddress, selDrone.port, "MAN" + "|" + ip + "|" + str(yaw) + "|" + str(pitch) + "|" + str(roll) + "|" + str(throttle) + "|" + str(killswitch) + "|")
+            sendMessage(selDrone.ipAddress, selDrone.port, "MAN" + "|" + ip + "|" + str(yaw) + "|" + str(pitch) + "|" + str(roll) + "|" + str(throttle) + "|" + str(killswitch) + "|" + str(armVar) + "|" + str(navHold) + "|")
         #sendMessage(selDrone.ipAddress, selDrone.port, yaw + str(i))
         
         time.sleep(0.01)
@@ -383,7 +384,26 @@ def kill():
     app.radio_button_1.configure(fg_color="Red", text="Drone Killed", text_color="Red")
     app.radio_button_2.configure(fg_color="Red", text="Drone Killed", text_color="Red")
     app.radio_button_3.configure(fg_color="Red", text="Drone Killed", text_color="Red")
-    
+def arm():
+    global armVar
+    if(app.checkbox_2.get() == 1):
+        armVar = 1575
+        print(app.checkbox_2.get())
+        print("armed!!!!!!!!!")
+    else:
+        armVar = 1000
+        print(app.checkbox_2.get())
+        print("UNarmed!!!!!!!!!")
+def navHoldFunc():
+    global navHold
+    if(app.checkbox_3.get() == 1):
+        navHold = 1600
+        print(app.checkbox_3.get())
+        print("HOLDING!!!!!!!!!")
+    else:
+        navHold = 1000
+        print(app.checkbox_3.get())
+        print("DRIFITNG!!!!!!!!!")
 
 def quit():
     qToComms.put("TERMINATE") #tell the subloop on the backup thread to quit.
@@ -665,9 +685,9 @@ class App(customtkinter.CTk):
         self.checkbox_slider_frame.grid(row=1, column=3, padx=(20, 20), pady=(20, 0), sticky="nsew")
         self.checkbox_1 = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame, text="Basestation Comms")
         self.checkbox_1.grid(row=1, column=0, pady=(20, 0), padx=20, sticky="n")
-        self.checkbox_2 = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame, text="SBUS Signal")
+        self.checkbox_2 = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame, text="ARM ME")
         self.checkbox_2.grid(row=2, column=0, pady=(20, 0), padx=20, sticky="n")
-        self.checkbox_3 = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame, text="Assaf")
+        self.checkbox_3 = customtkinter.CTkCheckBox(master=self.checkbox_slider_frame, text="NAV HOLD")
         self.checkbox_3.grid(row=3, column=0, pady=20, padx=20, sticky="n")
 
 
@@ -685,8 +705,11 @@ class App(customtkinter.CTk):
         # set default values
         self.sidebar_button_3.configure(command=lambda: addDrone(), text="Connect to Swarm")
         self.sidebar_button_4.configure(command=lambda: quit(), hover_color='Red', fg_color='Black', text_color = 'Red4')
-        self.checkbox_3.configure(state="disabled")
+      
         self.checkbox_1.select()
+        self.checkbox_2.configure(command=lambda: arm())
+        self.checkbox_3.configure(command=lambda: navHoldFunc())
+        
         self.scrollable_frame_switches[0].select()
         self.scrollable_frame_switches[4].select()
         self.radio_button_3.configure(state="disabled", text="Auto Mode")
