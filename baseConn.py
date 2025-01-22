@@ -9,6 +9,7 @@ from queue import Queue
 from pynput.keyboard import Key, Listener
 import time
 import customtkinter
+import os, platform
 import tkinter
 import tkinter.messagebox
 from PIL import Image
@@ -25,19 +26,27 @@ def getMyIP():
         global ipv4_address, ip, UDP_IP, UDP_PORT
         hostname = socket.gethostname()
         print(hostname)
-        print("00000")
-        #IP ADDRESS FOR WINDOWS OS -------------------------------------------------
-        # ipv4_address = socket.gethostbyname(hostname + ".local")
-        # print(f"Internal IPv4 Address for {hostname}: {ipv4_address}")
-        # ip = ipv4_address
-        #IP ADDRESS FOR WINDOWS OS -------------------------------------------------
-        # 
-        # IP ADRESSS FOR MAC OS =================================================================
-        ip = ni.ifaddresses('en1')[ni.AF_INET][0]['addr']
-        UDP_IP = ip
-        # ip = "0.0.0.0"
-        # IP ADRESSS FOR MAC OS =================================================================
+        print("Checking for operating system...")
+        if platform.system() == ("Windows"):
+            #IP ADDRESS FOR WINDOWS OS -------------------------------------------------
+            print(" ")
+            print("Operating system is WINDOWS")
+            print(" ")
+            ipv4_address = socket.gethostbyname(hostname + ".local")
+            print(f"Internal IPv4 Address for {hostname}: {ipv4_address}")
+            ip = ipv4_address
+            #IP ADDRESS FOR WINDOWS OS -------------------------------------------------
+
+        if platform.system() == ("Darwin"):
+            # IP ADRESSS FOR MAC OS =================================================================
+            print(" ")
+            print("Operating system is MACOS")
+            print(" ")
+            ip = ni.ifaddresses('en1')[ni.AF_INET][0]['addr']
+            # ip = "0.0.0.0"
+            # IP ADRESSS FOR MAC OS =================================================================
         UDP_PORT = 5005
+        UDP_IP = ip
         print(ip)
     except socket.gaierror as e:
         print("There was an error resolving the hostname.")
@@ -46,6 +55,15 @@ def getMyIP():
         print(f"An unexpected error occurred: {e}")
 
 getMyIP()
+
+if UDP_IP == 0:
+    print('\033[31m=========================================================\033[0m')
+    print('\033[31mFATAL ERROR: IP IS 0, IP GRABBING CODE FAILED\033[0m')
+    print('\033[31m=========================================================\033[0m')
+if UDP_PORT == 0:
+    print('\033[31m=========================================================\033[0m')
+    print('\033[31mFATAL ERROR: PORT IS 0, PORT GRABBING CODE FAILED\033[0m')
+    print('\033[31m=========================================================\033[0m')
 
 
 #ip = "0.0.0.0"
