@@ -97,6 +97,7 @@ global killswitch
 killswitch = 1000
 armVar = 1000
 navHold = 1000
+displayVar = "default Text"
 my_image = customtkinter.CTkImage(light_image=Image.open('connecteddrone.jpg'))
 dark_image=Image.open('connecteddrone.jpg')
 selectedDrone = "None"
@@ -242,7 +243,7 @@ def handshake(msg, addr):
             drones[i].port = addr[1]
     #droneList.update()    
 def sendMessage(ipAddress, port, msg):
-    global sock
+    global sock, displayVar
     print("sendMessage")
     print(ipAddress)
     print(port)
@@ -250,15 +251,16 @@ def sendMessage(ipAddress, port, msg):
     print("----------------------------")    
     bMsg = msg.encode("ascii")
     sock.sendto(bMsg, (ipAddress, int(port)))
+    app.textbox1.configure(text = displayVar)
     #print("sent message")
     time.sleep(0.0001)
 def manualControl():
-    global yaw, roll, pitch, throttle, keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, shouldQuit, manualyes, killswitch, armVar, navHold
+    global yaw, displayVar, roll, pitch, throttle, keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, shouldQuit, manualyes, killswitch, armVar, navHold, app
     global selDrone
     global selDroneTK
     listener =  Listener(on_press = show, on_release = release)   
     listener.start()
-
+    
     # yaw = 0
     # keyQ = False
     # keyE = False
@@ -295,7 +297,8 @@ def manualControl():
             pass
 
 
-
+        displayVar = "Throttle: " + str(throttle)
+        # App.textbox1.configure(text = displayVar)
         if yaw > 1500 and keyQ == False and keyE == False:
             yaw -= 1
         elif yaw < 1500 and keyQ == False and keyE == False:
@@ -313,7 +316,6 @@ def manualControl():
         # elif throttle < 1000 and keyAU == False and keyAD == False:
         #     throttle += 1
 
-        
         yaw = clamp(yaw)
         roll = clamp(roll)
         pitch = clamp(pitch)
@@ -329,7 +331,7 @@ def manualControl():
         # for i in droneList.curselection():
         #     selDrone = drones[i]
             #print(selDrone)
-        
+       
         #print(selDrone.ipAddress)Fa
         if (manualyes == True):
             sendMessage(selDrone.ipAddress, selDrone.port, "MAN" + "|" + ip + "|" + str(yaw) + "|" + str(pitch) + "|" + str(roll) + "|" + str(throttle) + "|" + str(killswitch) + "|" + str(armVar) + "|" + str(navHold) + "|")
@@ -578,8 +580,8 @@ class App(customtkinter.CTk):
         self.main_button_1.grid(row=3, column=3, padx=(20, 20), pady=(20, 20), sticky="nsew")
 
         # create textbox
-        self.textbox = customtkinter.CTkTextbox(self, width=250)
-        self.textbox.grid(row=0, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
+        self.textbox1 = customtkinter.CTkLabel(self, width=250)
+        self.textbox1.grid(row=0, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
 
         # create tabview
         self.tabview = customtkinter.CTkTabview(self, width=250)
@@ -739,7 +741,7 @@ class App(customtkinter.CTk):
         self.slider_2.configure(command=self.progressbar_3.set)
         self.progressbar_1.configure(mode="indeterminnate")
         self.progressbar_1.start()
-        self.textbox.insert("0.0", "flup\n\n" + "epic box.\n\n" * 20)
+        self.textbox1.configure(text = displayVar)
         self.seg_button_1.configure(values=["Sensitivity", "Throttle", "Max Range"])
         self.seg_button_1.set("Value 2")
 
