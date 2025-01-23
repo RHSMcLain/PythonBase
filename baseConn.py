@@ -253,7 +253,7 @@ def sendMessage(ipAddress, port, msg):
     sock.sendto(bMsg, (ipAddress, int(port)))
     app.textbox1.configure(text = displayVar)
     #print("sent message")
-    time.sleep(0.0001)
+    time.sleep(0.002)
 def manualControl():
     global yaw, displayVar, roll, pitch, throttle, keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, shouldQuit, manualyes, killswitch, armVar, navHold, app
     global selDrone
