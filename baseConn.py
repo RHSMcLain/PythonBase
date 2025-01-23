@@ -297,7 +297,7 @@ def manualControl():
             pass
 
 
-        displayVar = "Throttle: " + str(throttle)
+        displayVar = "Throttle: " + str(throttle) + "\n Pitch: " + str(pitch) + "\n Yaw: " + str(yaw) + "\n Roll: " + str(roll) + "\nArmVar: " + str(armVar) + "\nNavHold: " + str(navHold)
         # App.textbox1.configure(text = displayVar)
         if yaw > 1500 and keyQ == False and keyE == False:
             yaw -= 1
