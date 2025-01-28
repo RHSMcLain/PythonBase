@@ -85,6 +85,7 @@ keyS = False
 throttle = 0
 keyAU = False
 keyAD = False
+keyR = False
 shouldQuit = False
 global manualyes
 global selDrone
@@ -151,7 +152,7 @@ def introToAP():
         #if it is, we can break
 
 def show(key):
-    global yaw, roll, pitch, throttle, keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, shouldQuit
+    global yaw, roll, pitch, throttle, keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, shouldQuit, keyR
     try:
         if key == Key.up:
             #print("Up")
@@ -174,10 +175,12 @@ def show(key):
             keyS = True
         if key.char == 'p':
             shouldQuit = True
+        if key.char == 'r':
+            keyR = True
     except:
         pass
 def release(key):
-    global keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, throttle
+    global keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, throttle, keyR
     try:
         if key == Key.up:
             keyAU = False
@@ -197,6 +200,8 @@ def release(key):
             keyW = False
         if key.char == 's':
             keyS = False
+        if key.char == 'r':
+            keyR = False
     except:
         pass
 def begin():
@@ -255,7 +260,7 @@ def sendMessage(ipAddress, port, msg):
     #print("sent message")
     time.sleep(0.002)
 def manualControl():
-    global yaw, displayVar, roll, pitch, throttle, keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, shouldQuit, manualyes, killswitch, armVar, navHold, app
+    global yaw, displayVar, roll, pitch, throttle, keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, shouldQuit, manualyes, killswitch, armVar, navHold, app, keyR
     global selDrone
     global selDroneTK
     listener =  Listener(on_press = show, on_release = release)   
@@ -291,6 +296,8 @@ def manualControl():
             throttle += 1
         elif keyAD:
             throttle -= 1
+        if keyR:
+            kill()
         if shouldQuit:
             #listener.stop()
             #break
