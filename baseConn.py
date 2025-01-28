@@ -9,19 +9,23 @@ from queue import Queue
 from pynput.keyboard import Key, Listener
 import time
 import customtkinter
-import os, platform
+import platform
 import tkinter
 import tkinter.messagebox
 from PIL import Image
+
 #pip3 install "requests>=2.*"
-#pip3 install netifaces
+#pip3 install netifaces (make sure you have c++ build tools for window)
 #python3 -m pip install customtkinter
 #python3 -m pip install --upgrade Pillow
+
+#This section resets the IP assignment so that baseStation doesnt get confused about which computer it is
 global UDP_IP, ip, ipv4_address
 ip = 0
 UDP_IP = 0
+
+ #This function detects the local operating system and grabs the IP in slightly different ways depending
 def getMyIP():
-    #TODO: DETECT THE CORRECT OPERATING SYSTEM SO IT DOES IT ITSELF
     try:
         global ipv4_address, ip, UDP_IP, UDP_PORT
         hostname = socket.gethostname()
@@ -36,7 +40,6 @@ def getMyIP():
             print(f"Internal IPv4 Address for {hostname}: {ipv4_address}")
             ip = ipv4_address
             #IP ADDRESS FOR WINDOWS OS -------------------------------------------------
-
         if platform.system() == ("Darwin"):
             # IP ADRESSS FOR MAC OS =================================================================
             print(" ")
@@ -56,6 +59,7 @@ def getMyIP():
 
 getMyIP()
 
+#error protection
 if UDP_IP == 0:
     print('\033[31m=========================================================\033[0m')
     print('\033[31mFATAL ERROR: IP IS 0, IP GRABBING CODE FAILED\033[0m')
@@ -64,15 +68,18 @@ if UDP_PORT == 0:
     print('\033[31m=========================================================\033[0m')
     print('\033[31mFATAL ERROR: PORT IS 0, PORT GRABBING CODE FAILED\033[0m')
     print('\033[31m=========================================================\033[0m')
-
-
-#ip = "0.0.0.0"
-# UDP_IP = ipv4_address
-# ip = ipv4_address
 print("UDP IP is " + str(UDP_IP))
 
-#BRENDAN CODE _____________________________________________________________________________________________________
-global yaw, roll, pitch, throttle, keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, shouldQuit, navHold
+#Variable decloration for most functions of the drone including keyboard and modes
+    #Global ensures that functions dont create copys of variables and actually edit the right ones
+global yaw, roll, pitch, throttle, keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, shouldQuit, navHold, my_image
+global manualyes
+global selDrone
+global selDroneTK
+global droneNumber
+global selectedDrone
+global killswitch
+    #default values:
 yaw = 0
 keyQ = False
 keyE = False
@@ -87,29 +94,22 @@ keyAU = False
 keyAD = False
 keyR = False
 shouldQuit = False
-global manualyes
-global selDrone
-global selDroneTK
-manualyes = False
-global droneNumber
 droneNumber = 0
-global selectedDrone
-global killswitch
+manualyes = False
 killswitch = 1000
 armVar = 1000
 navHold = 1000
 displayVar = "default Text"
-my_image = customtkinter.CTkImage(light_image=Image.open('connecteddrone.jpg'))
+my_image = customtkinter.CTkImage(light_image=Image.open('connecteddrone.jpg'),size=1000)
 dark_image=Image.open('connecteddrone.jpg')
 selectedDrone = "None"
 curr_time = round(time.time()*1000)
 
+#We love customTkinter for making application pretty
 customtkinter.set_appearance_mode("dark")
 customtkinter.set_default_color_theme("blue")
 
-
-
-
+#This function clamps drone control signals to acceptable levels
 def clamp(val):
     lowLimit = 1000
     highLimit = 2000
@@ -118,6 +118,8 @@ def clamp(val):
     if val > highLimit:
         val = highLimit   
     return val
+
+#This function runs the initial acces point connection
 def introToAP():
     global sock
     #tell the AP that we are the base station. 
@@ -151,6 +153,7 @@ def introToAP():
         #test the input to see if it is the confirmation code
         #if it is, we can break
 
+#The follwing two functions are used to capture keyboard inputs
 def show(key):
     global yaw, roll, pitch, throttle, keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, shouldQuit, keyR
     try:
@@ -204,24 +207,23 @@ def release(key):
             keyR = False
     except:
         pass
-def begin():
-    global manualyes
-    if (manualyes == True):
-        manualyes = False
-        print("MANUAL STOPPED")
-    elif (manualyes == False):
-        manualyes = True
+
+#This function switches from Manual to Swarm
 def MODESwarm():
     global manualyes
     manualyes = False
     print("|||  MANUAL STOPPED  |||")
+
+#This function switches from Swarm to Manual
 def MODEManual():
     global manualyes
     manualyes = True
     print("|||  MANUAL ENABLED   |||")
+
 # Collect all event until released
 #BRENDAN CODE _____________________________________________________________________________________________________
 
+#This function handles the initial connection when a drone's arduino reaches out to basestation
 def handshake(msg, addr):
     global droneNumber
     parts = msg.split("|")
@@ -235,7 +237,7 @@ def handshake(msg, addr):
         drone =  Drone(i, parts[2], addr[0], addr[1])
         drones.append(drone)
         droneNumber = (droneNumber+1)
-        app.my_label.configure(text="DRONE CONNECTED", image=my_image, size=(150,150))
+        app.my_label.configure(text="DRONE CONNECTED", image=my_image, size=(500,200))
         for adrone in drones:
             print(adrone)
         #updateList()
@@ -247,6 +249,8 @@ def handshake(msg, addr):
             drones[i].ipAddress = addr[0]
             drones[i].port = addr[1]
     #droneList.update()    
+
+#This function is used to send the packets of instructions to the drone
 def sendMessage(ipAddress, port, msg):
     global sock, displayVar
     print("sendMessage")
@@ -259,6 +263,8 @@ def sendMessage(ipAddress, port, msg):
     app.textbox1.configure(text = displayVar)
     #print("sent message")
     time.sleep(0.002)
+
+#This function is where all of the manual contol is handled
 def manualControl():
     global yaw, displayVar, roll, pitch, throttle, keyQ, keyE, keyA, keyD, keyW, keyS, keyAU, keyAD, shouldQuit, manualyes, killswitch, armVar, navHold, app, keyR
     global selDrone
@@ -340,27 +346,19 @@ def manualControl():
             #print(selDrone)
        
         #print(selDrone.ipAddress)Fa
-        if (manualyes == True):
+        if (manualyes == True and killswitch != 1700):
             sendMessage(selDrone.ipAddress, selDrone.port, "MAN" + "|" + ip + "|" + str(yaw) + "|" + str(pitch) + "|" + str(roll) + "|" + str(throttle) + "|" + str(killswitch) + "|" + str(armVar) + "|" + str(navHold) + "|")
         #sendMessage(selDrone.ipAddress, selDrone.port, yaw + str(i))
         
         time.sleep(0.01)
 
-#def updateList():
-    #clear the list box
-    #droneList.delete(0, len(drones)-1)
-
-    #walk through drones
-    #for i in range(len(drones)):
-        #droneList.insert(i, str(drones[i]))
-    #insert all the drone elements
-
-
+#This function just prints the list of drones
 def listDrones():
     global drones
     for drone in drones:
         print(drone.name, drone.ipAddress, drone.port, "\t") 
 
+#I dont atcually know what magic this function does but it is part of how we connect
 def listen(q_out, q_in):#happens on a separate thread
     print("Listener Thread began")
     while True:
@@ -389,6 +387,8 @@ def listen(q_out, q_in):#happens on a separate thread
         #     #HANDSHAKE
         #     handshake(parts, addr)
     print("goodbye")
+
+#This function adds a drone object to the list
 def addDrone():
     global droneNumber, app
     #this is just to test if tkinter will add them to the listbox on a button press.
@@ -396,6 +396,8 @@ def addDrone():
     droneNumber = (droneNumber+1)
     print(str(drones))
     app.my_label.configure(text="DRONE CONNECTED", image=my_image, size=(150,150))
+
+#This function kills the drone by turning on the killswitch
 def kill():
     global killswitch
     killswitch = 1700
@@ -411,6 +413,8 @@ def kill():
     app.radio_button_1.configure(fg_color="Red", text="Drone Killed", text_color="Red")
     app.radio_button_2.configure(fg_color="Red", text="Drone Killed", text_color="Red")
     app.radio_button_3.configure(fg_color="Red", text="Drone Killed", text_color="Red")
+
+#This funcion sends the drone arming values
 def arm():
     global armVar
     if(app.checkbox_2.get() == 1):
@@ -421,6 +425,8 @@ def arm():
         armVar = 1000
         print(app.checkbox_2.get())
         print("UNarmed!!!!!!!!!")
+
+#This function tells the drone to hold in place
 def navHoldFunc():
     global navHold
     if(app.checkbox_3.get() == 1):
@@ -432,6 +438,7 @@ def navHoldFunc():
         print(app.checkbox_3.get())
         print("DRIFITNG!!!!!!!!!")
 
+#This function closes the application
 def quit():
     qToComms.put("TERMINATE") #tell the subloop on the backup thread to quit.
     t = qFromComms.get(timeout=3.0)
@@ -440,6 +447,8 @@ def quit():
     app.destroy()
     App.destroy()
     exit()
+
+#This function checks and connects to drones waiting in the connection que
 def checkQueue(q_in):
     global selDrone
     global selDroneTK
@@ -479,55 +488,17 @@ terminate = False
 maxDrones = 3
 drones = []
 #these next two lines are for testing only. Remove them
-drones.append(Drone(0, "one", "10.20.18.23", 85))
-droneNumber = (droneNumber+1)
-drones.append(Drone(1, "two", "10.20.18.23", 85))
-droneNumber = (droneNumber+1)
-drones.append(Drone(2, "three", "192.168.4.22", 80))
+drones.append(Drone(0, "HelloWorldDrone", "10.20.18.23", 85))
 droneNumber = (droneNumber+1)
 selDrone = drones[0]
-
-#----- Setup our OLD GUI --------
-#OLD GUI==============================
-'''
-root = Tk()
-root.geometry("400x400")
-root.title("Drone Manager")
-
-frm = ttk.Frame(root, padding=10)
-frm.grid()
-ttk.Label(frm, text="hello world").grid(column = 0, row = 0)
-ttk.Label(frm, text="Drones List").grid(column = 0, row = 1)
-
-listVar = StringVar(value = drones)
-droneList = Listbox(master = root,width =10, height = 25, listvariable = listVar)
-
-droneList.grid(column = 0, row = 2)
-black = "black"
-
-manualbutton = Button(root, text="Manual", width=5, height=5, command=lambda: begin()).grid(column=3, row=2, padx=50)
-
-selDroneTK = tk.StringVar(root)
-button = Button(root,text = "Test!", width=5, height=5, command=lambda: introToAP()).grid()
-ttk.Label(root, text="Name | IP | Port").grid(column = 2, row = 1,padx=50)
-lblDroneIP = ttk.Label(root, textvariable=selDroneTK).grid(column = 2, row = 2,padx=50)
-'''
-
 
 #-------------------------------------------------------------------------------------------------
 #------------------------------------CUSTOM TKINTER GUI----------------------------
 #-----------------------------------------------------------------------------
 
-# #create window
-# custom = customtkinter.CTk()
-# custom.geometry("300x400")
-# #create button
-# button = customtkinter.CTkButton(master=custom, text="test")
-# button.place(relx=0.5, rely=0.5, anchor=CENTER)
-
 #run loop
-#-------------custom.mainloop()
 
+#THIS PART IS ALL OF THE APPLICATION COMPONENTS. DONT TOUCH
 class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
@@ -794,13 +765,6 @@ class App(customtkinter.CTk):
 
     def sidebar_button_event(self):
         print("sidebar_button click")
-
-
-
-
-
-
-
 
 
 #-----------------------------------------------------------------------------
