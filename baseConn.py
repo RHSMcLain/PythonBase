@@ -19,6 +19,8 @@ from PIL import Image
 #python3 -m pip install customtkinter
 #python3 -m pip install --upgrade Pillow
 
+
+
 #This section resets the IP assignment so that baseStation doesnt get confused about which computer it is
 global UDP_IP, ip, ipv4_address
 ip = 0
@@ -100,7 +102,7 @@ killswitch = 1000
 armVar = 1000
 navHold = 1000
 displayVar = "default Text"
-my_image = customtkinter.CTkImage(light_image=Image.open('connecteddrone.jpg'),size=1000)
+my_image = customtkinter.CTkImage(light_image=Image.open('connecteddrone.jpg'),size=(150, 150))
 dark_image=Image.open('connecteddrone.jpg')
 selectedDrone = "None"
 curr_time = round(time.time()*1000)
@@ -237,9 +239,10 @@ def handshake(msg, addr):
         drone =  Drone(i, parts[2], addr[0], addr[1])
         drones.append(drone)
         droneNumber = (droneNumber+1)
-        app.my_label.configure(text="DRONE CONNECTED", image=my_image, size=(500,200))
+        app.my_label.configure(text="DRONE CONNECTED", image=my_image)
         for adrone in drones:
             print(adrone)
+            
         #updateList()
         #sendMessage(drone.ipAddress, drone.port, "HSC|" + str(i))
 
@@ -248,7 +251,8 @@ def handshake(msg, addr):
             #we could update here
             drones[i].ipAddress = addr[0]
             drones[i].port = addr[1]
-    #droneList.update()    
+    #droneList.update() 
+    app.setDroneName()  
 
 #This function is used to send the packets of instructions to the drone
 def sendMessage(ipAddress, port, msg):
@@ -389,15 +393,14 @@ def listen(q_out, q_in):#happens on a separate thread
     print("goodbye")
 
 #This function adds a drone object to the list
-def addDrone():
-    global droneNumber, app
+def  addDrone():
+    global droneNumber, app, drones, my_image
     #this is just to test if tkinter will add them to the listbox on a button press.
     drones.append(Drone(8, "test", "none", 17))
     droneNumber = (droneNumber+1)
     print(str(drones))
-    app.my_label.configure(text="DRONE CONNECTED", image=my_image, size=(150,150))
-
-#This function kills the drone by turning on the killswitch
+    app.my_label.configure(text="DRONE CONNECTED", image=my_image)
+#This function k0..ills the drone by turning on the killswitch
 def kill():
     global killswitch
     killswitch = 1700
