@@ -284,7 +284,7 @@ def MODEManual():
 
 #This function handles the initial connection when a drone's arduino reaches out to basestation
 def handshake(msg, addr):
-    global droneNumber
+    global droneNumber,displayVar
     parts = msg.split("|")
     i = int(parts[1])
    
@@ -297,9 +297,13 @@ def handshake(msg, addr):
         drones.append(drone)
         droneNumber = (droneNumber+1)
         app.my_label.configure(text="DRONE CONNECTED", image=my_image)
+        displayVar = displayVar.replace("\nChecking Que", "")
+        updateDroneNames()
+        for i in range(1,len(drones)):
+            displayVar += ("\nConnected: " + drones[i].name)
+            app.textbox1.configure(text = displayVar)
         for adrone in drones:
             print(adrone)
-            
         #updateList()
         #sendMessage(drone.ipAddress, drone.port, "HSC|" + str(i))
 
@@ -458,6 +462,7 @@ def  addDrone():
     drones.append(Drone(8, "test", "none", 17))
     droneNumber = (droneNumber+1)
     print(str(drones))
+    updateDroneNames()
     app.my_label.configure(text="DRONE CONNECTED", image=my_image)
 #This function k0..ills the drone by turning on the killswitch
 def kill():
@@ -512,7 +517,7 @@ def quit():
 
 #This function checks and connects to drones waiting in the connection que
 def checkQueue(q_in):
-    global selDrone
+    global selDrone, displayVar
     global selDroneTK
     #selDroneTK.set(selDrone.ipAddress)
     #lblDroneIP.config(text = selDrone.ipAddress)
@@ -520,6 +525,8 @@ def checkQueue(q_in):
     #print(selDrone.ipAddress)
     if (not q_in.empty()):
         print("checking queue")
+        displayVar += "\nChecking Que"
+        app.textbox1.configure(text=displayVar)
         #grab the item
         #process the info
         #mark it complete
@@ -536,7 +543,7 @@ def checkQueue(q_in):
         if cmd == "HND":
             #HANDSHAKE
             handshake(msg, (addr, port))
-    app.after(1000, checkQueue, q_in)
+    app.after(700, checkQueue, q_in)
 
 
 #--------------------------------------------
